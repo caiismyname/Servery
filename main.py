@@ -2,6 +2,9 @@ import urllib3
 from twilio.rest import Client
 import requests
 import json
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
 
@@ -86,11 +89,18 @@ def addUser(number, servery):
 	print(r, r2)
 
 def getUsersOfServery(servery):
-	r = requests.get("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json")
-	users = json.loads(r.text).keys()
 
-	print(servery, str(users))
-	return users
+	serviceAccountKey = "./serviceAccountKey.json"
+	cred = credentials.Certificate(serviceAccountKey)
+	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
+
+	# r = requests.get("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json")
+	# users = json.loads(r.text).keys()
+	# print(users)
+
+	ref = db.reference("serveries/" + servery)
+	print(ref.get().keys())
+	return ref.get().keys()
 
 ################
 # Web scraping
