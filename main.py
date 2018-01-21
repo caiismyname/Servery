@@ -55,7 +55,7 @@ def sendMessage(recipient, message):
 	    from_=twilioPhoneNumber,
 	    body=message)
 
-	print recipient, message
+	print(recipient, message)
 
 
 ################
@@ -83,13 +83,13 @@ def addUser(number, servery):
 	r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
 	r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
 
-	print r, r2
+	print(r, r2)
 
 def getUsersOfServery(servery):
 	r = requests.get("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json")
 	users = json.loads(r.text).keys()
 
-	print servery, str(users)
+	print(servery, str(users))
 	return users
 
 ################
@@ -119,7 +119,7 @@ def getMenusFromSite(site):
 		servery.setHTMLMenu(site[startIndex:endIndex])
 
 		menuMap[s] = servery
-		print servery
+		print(servery)
 
 	return menuMap
 
