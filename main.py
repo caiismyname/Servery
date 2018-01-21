@@ -1,4 +1,4 @@
-import urllib2
+import urllib3
 from twilio.rest import Client
 import requests
 import json
@@ -98,7 +98,8 @@ def getUsersOfServery(servery):
 
 def getWebsite():
 	# Pull webpage
-	diningSite = urllib2.urlopen("http://dining.rice.edu").read()
+	http = urllib3.PoolManager()
+	diningSite = http.request('GET', "http://dining.rice.edu").data
 
 	# Get menu portion
 	startIndex = diningSite.find("<div id=\"main\">")
