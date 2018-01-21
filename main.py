@@ -99,10 +99,10 @@ def getUsersOfServery(servery):
 def getWebsite():
 	# Pull webpage
 	http = urllib3.PoolManager()
-	diningSite = http.request('GET', "http://dining.rice.edu").data
+	diningSite = str(http.request('GET', "http://dining.rice.edu").data)
 
 	# Get menu portion
-	startIndex = diningSite.find("<div id=\"main\">")
+	startIndex = diningSite.find('<div id="main">')
 	endIndex = diningSite.find("<!--//End Main-->")
 	site = diningSite[startIndex:endIndex]
 
