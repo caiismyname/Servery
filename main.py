@@ -5,6 +5,9 @@ import json
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
+from dotenv import load_dotenv, find_dotenv
+import os
+
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
 
@@ -43,17 +46,18 @@ class Servery:
 # Twilio
 ################
 
-twilioAccountSid = "AC1c8c9d1d3d8bff18991ab45434b0e10c"
-twilioAccountToken = "ccdcc4c3508ae8665bb91b9739b80676"
 twilioPhoneNumber = "+17137144366"
+twilioClient = None
 
-client = Client(twilioAccountSid, twilioAccountToken)
+def initTwilio():
+	global twilioClient
+	twilioClient = Client(os.environ.get("TWILIO-ACCOUNT-SID"), os.environ.get("TWILIO-ACCOUNT-TOKEN"))
 
 def sendMessage(recipient, message):
 	if recipient[:2] != "+1":
 		recipient = "+1" + recipient
 
-	client.api.account.messages.create(
+	twilioClient.api.account.messages.create(
 	    to=recipient,
 	    from_=twilioPhoneNumber,
 	    body=message)
@@ -64,6 +68,33 @@ def sendMessage(recipient, message):
 ################
 # Firebase
 ################
+
+def initFirebase():
+	# This is so stupid.
+	# Unadultered, the private_key gets ready out with "\\\n" instead of newlines.
+	# Putting it in surrounded by quotes makes it "\n" (literal).
+	# Read that, split, then concat actual newlines, to make it a valid private_key.
+
+	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
+	privateKey = ""
+	for portion in privateKeySplit:
+		privateKey += portion + "\n"
+
+	serviceAccountKey = {
+		'type': os.environ.get("FIREBASE-TYPE"),
+		# 'project_id': os.environ.get("FIREBASE-PROJECT-ID"), 
+		# 'private_key_id': os.environ.get("FIREBASE-PRIVATE-KEY-ID"),
+		'private_key': privateKey,
+		'client_email': os.environ.get("FIREBASE-CLIENT-EMAIL"), 
+		# 'client_id': os.environ.get("FIREBASE-CLIENT-ID"),
+		# 'auth_uri': os.environ.get("FIREBASE-AUTH-URI"),
+		'token_uri': os.environ.get("FIREBASE-TOKEN-URI"),
+		# 'auth_provider_x509_cert_url': os.environ.get("FIREBASE-AUTH-PROVIDER"),
+		# 'client_x509_cert_url': os.environ.get("FIREBASE-CLIENT-CERT-URL")
+	}
+
+	cred = credentials.Certificate(serviceAccountKey)
+	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
 def addUser(number, servery):
 
@@ -89,10 +120,6 @@ def addUser(number, servery):
 	print(r, r2)
 
 def getUsersOfServery(servery):
-
-	serviceAccountKey = "./serviceAccountKey.json"
-	cred = credentials.Certificate(serviceAccountKey)
-	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
 	# r = requests.get("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json")
 	# users = json.loads(r.text).keys()
@@ -139,7 +166,14 @@ def getMenusFromSite(site):
 # Put it all together
 ################
 
+# Sets up enviornment variables for secrets
+def initEnviron():
+	load_dotenv(find_dotenv())
+	initTwilio()
+	initFirebase()
+
 def update():
+	initEnviron()
 	menuMap = getMenusFromSite(getWebsite())
 
 	for servery in serveries:
