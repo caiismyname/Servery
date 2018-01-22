@@ -142,6 +142,8 @@ def addUser():
 
 	# print(r, r2)
 
+	return '', 200
+
 def getUsersOfServery(servery):
 
 	# r = requests.get("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json")
@@ -211,7 +213,7 @@ def update():
 # update()
 
 initEnviron()
-port = int(os.environ.get("PORT", 33507))
+port = int(os.environ.get('PORT', 33507))
 app.run(debug=True, port=port)
 
 
