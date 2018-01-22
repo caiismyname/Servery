@@ -7,7 +7,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, requests
+from flask import Flask, request
 import os
 
 
