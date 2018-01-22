@@ -1,11 +1,13 @@
 import urllib3
 from twilio.rest import Client
+from twilio.twiml.messaging_response import MessagingResponse
 import requests
 import json
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
+from flask import Flask, requests
 import os
 
 
@@ -97,7 +99,16 @@ def initFirebase():
 	cred = credentials.Certificate(serviceAccountKey)
 	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
-def addUser(number, servery):
+# Defining Flask here b/c it's only used as an endpoint for Twilio requests
+# And apprently this is the syntax for defining handlers.
+app = Flask(__name__)
+
+@app.route('/addUser', methods=['POST'])
+def addUser():
+
+	servery = request.args.get('Body', None)
+	number = request.args.get('From')
+	resp = MessagingResponse()
 
 	if 'w' in servery:
 		servery = "West"
@@ -114,11 +125,16 @@ def addUser(number, servery):
 	else:
 		return False
 
+	serveryRef = db.reference("serveries/" + servery)
+	serveryRef.push({number: number})
 
-	r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
-	r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
+	usersRef = db.reference("users")
+	usersRef.push({number: servery})
 
-	print(r, r2)
+	# r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
+	# r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
+
+	# print(r, r2)
 
 def getUsersOfServery(servery):
 
@@ -186,7 +202,7 @@ def update():
 				sendMessage(user, str(menu))
 
 
-update()
+# update()
 
 
 
