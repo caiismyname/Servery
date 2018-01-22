@@ -72,17 +72,14 @@ def sendMessage(recipient, message):
 def initFirebase():
 	# This is so stupid.
 	# Unadultered, the private_key gets ready out with "\\\n" instead of newlines.
-	# Putting it in surrounded by quotes makes it "\n" (literal).
+	# Putting the key in surrounded by quotes makes it "\n" (literal).
+		# Note that the surrounding quotes are only needed on my local machine, not on heroku.
 	# Read that, split, then concat actual newlines, to make it a valid private_key.
 
 	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
-
-	print("READ IN: " + os.environ.get("FIREBASE-PRIVATE-KEY"))
 	privateKey = ""
 	for portion in privateKeySplit:
 		privateKey += portion + "\n"
-
-	print("CONSTRUCTED: " + privateKey)
 
 	serviceAccountKey = {
 		'type': os.environ.get("FIREBASE-TYPE"),
