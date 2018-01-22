@@ -106,9 +106,13 @@ app = Flask(__name__)
 @app.route('/addUser', methods=['POST'])
 def addUser():
 
+	print("adding user")
+
 	servery = request.args.get('Body', None)
 	number = request.args.get('From')
-	resp = MessagingResponse()
+	# resp = MessagingResponse()
+
+	print("servery: ", servery, "number: ", number)
 
 	if 'w' in servery:
 		servery = "West"
@@ -130,6 +134,8 @@ def addUser():
 
 	usersRef = db.reference("users")
 	usersRef.push({number: servery})
+
+	print("added user to firebase")
 
 	# r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
 	# r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
@@ -204,7 +210,10 @@ def update():
 
 # update()
 
+initEnviron()
 port = int(os.environ.get("PORT", 33507))
 app.run(debug=True, port=port)
+
+
 
 
