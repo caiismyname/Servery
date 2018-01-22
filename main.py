@@ -129,14 +129,15 @@ def addUser():
 		return False
 
 	serveryRef = db.reference("serveries/" + servery)
-	serveryRef.push({number: number})
+	serveryRef.set({number: number})
 
 	usersRef = db.reference("users")
-	usersRef.push({number: servery})
+	usersRef.set({number: servery})
 
 	print("added user to firebase")
 
-	resp = MessagingResponse("You'll received the menu for {} servery".format(servery))
+	resp = MessagingResponse()
+	resp.message("You'll received the menu for {} servery".format(servery))
 
 	# r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
 	# r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
