@@ -76,9 +76,13 @@ def initFirebase():
 	# Read that, split, then concat actual newlines, to make it a valid private_key.
 
 	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
+
+	print("READ IN: " + os.environ.get("FIREBASE-PRIVATE-KEY"))
 	privateKey = ""
 	for portion in privateKeySplit:
 		privateKey += portion + "\n"
+
+	print("CONSTRUCTED: " + privateKey)
 
 	serviceAccountKey = {
 		'type': os.environ.get("FIREBASE-TYPE"),
