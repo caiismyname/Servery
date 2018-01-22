@@ -108,9 +108,8 @@ def addUser():
 
 	print("adding user")
 
-	servery = request.args.get('Body', None)
-	number = request.args.get('From')
-	# resp = MessagingResponse()
+	servery = request.form['Body']
+	number = request.form['From']
 
 	print("servery: ", servery, "number: ", number)
 
@@ -137,12 +136,14 @@ def addUser():
 
 	print("added user to firebase")
 
+	resp = MessagingResponse("You'll received the menu for {} servery".format(servery))
+
 	# r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
 	# r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
 
 	# print(r, r2)
 
-	return '', 200
+	return str(resp), 200
 
 def getUsersOfServery(servery):
 
