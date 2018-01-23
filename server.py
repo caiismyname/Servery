@@ -151,7 +151,7 @@ def getMenu(servery):
 	return ref.get()
 
 def getServery(number):
-	ref = db.reference("users/" + number)
+	ref = db.reference("users/+" + number)
 	return ref.get()
 
 ################
