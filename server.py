@@ -80,27 +80,32 @@ def addUser():
 
 	# New user
 	if getServery(number) is None and parseServeryName(body) is not None:
+		print("Adding new user " + str(number) + " to " + parseServeryName(body))
 		addUserToServery(number, parseServeryName(body), False)
 		resp.message("You'll receive the menu for {} servery".format(parseServeryName(body)))
 		return str(resp), 200
 
 	# Asking for menu of default servery
 	if body == "menu":
+		print("Sending menu")
 		resp.message(getMenu(getServery(number)))
-		return str(resp), 200
-
-	# Asking for menu of non-default servery
-	if getServery(number) is not None and parseServeryName(body) is not None:
-		resp.message(getMenu(parseServeryName(body)))
 		return str(resp), 200
 
 	# Updating servery preference
 	if len(body.split(" ")) == 2 and body.split(" ")[0] == "set":
-		servery = parseServeryName(bod.split(" ")[1])
+		print("Updating preference for " + str(number) + " to " + parseServeryName(body.split(" ")[1]))
+		servery = parseServeryName(body.split(" ")[1])
 		if servery is not None:
 			addUserToServery(number, servery, True)
 			resp.message("You'll receive the menu for {} servery".format(servery))
 			return str(resp), 200
+
+
+	# Asking for menu of non-default servery
+	if getServery(number) is not None and parseServeryName(body) is not None:
+		print("Sending menu for non default servery")
+		resp.message(getMenu(parseServeryName(body)))
+		return str(resp), 200
 	
 	resp.message("Sorry, I don't understand. Text \"menu\" for the menu.")
 	return str(resp), 200
