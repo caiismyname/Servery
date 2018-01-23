@@ -24,12 +24,15 @@ def sendMessage(recipient, message):
 	if recipient[:2] != "+1":
 		recipient = "+1" + recipient
 
-	twilioClient.api.account.messages.create(
-	    to=recipient,
-	    from_=twilioPhoneNumber,
-	    body=message)
+	try:
+		twilioClient.api.account.messages.create(
+		    to=recipient,
+		    from_=twilioPhoneNumber,
+		    body=message)
 
-	print(recipient, message)
+		print(recipient, message)
+	except twilio.base.exceptions.TwilioRestException:
+		print("TwilioRestException occured")
 
 
 ################
