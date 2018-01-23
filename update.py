@@ -134,7 +134,7 @@ def getMenusFromSite(site):
 		servery.setHTMLMenu(site[startIndex:endIndex])
 
 		menuMap[s] = servery
-		storeMenu(s, str(severy))
+		storeMenu(s, str(servery))
 		print(servery)
 
 	return menuMap
