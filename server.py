@@ -114,20 +114,21 @@ def addUser():
 		resp.message(getMenu(getServery(number)))
 		return str(resp), 200
 
-	if 'w' in body:
+	if 'we' in body:
 		servery = "West"
 	elif 'bel' in body:
 		servery = "Seibel"
-	elif 'n' in body:
+	elif 'no' in body:
 		servery = "North"
-	elif 'k' in body:
+	elif 'ak' in body:
 		servery = "Baker"
 	elif 'ri' in body:
 		servery = "SidRich"
 	elif 'ou' in body:
 		servery = "South"
 	else:
-		return False
+		resp.message("Sorry, I don't understand. Text \"menu\" for the menu.")
+		return str(resp), 200
 
 	serveryRef = db.reference("serveries/" + servery + "/+" + number)
 	serveryRef.set(number)
