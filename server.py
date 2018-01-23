@@ -92,6 +92,8 @@ def addUser():
 		return str(resp), 200
 
 	# Updating servery preference
+	# This has to come before asking menu of non-default servery
+	# because the cases overlap.
 	if len(body.split(" ")) == 2 and body.split(" ")[0] == "set":
 		print("Updating preference for " + str(number) + " to " + parseServeryName(body.split(" ")[1]))
 		servery = parseServeryName(body.split(" ")[1])
@@ -99,7 +101,6 @@ def addUser():
 			addUserToServery(number, servery, True)
 			resp.message("You'll receive the menu for {} servery".format(servery))
 			return str(resp), 200
-
 
 	# Asking for menu of non-default servery
 	if getServery(number) is not None and parseServeryName(body) is not None:
@@ -149,7 +150,7 @@ def addUserToServery(number, servery, isUpdate):
 		# Remove from existing servery
 		oldServery = getServery(number)
 		oldServeryRef = db.reference("serveries/" + oldServery + "/+" + number)
-		oldServeryRef.set("null")
+		oldServeryRef.set(None)
 
 	# Add to new servery
 	serveryRef = db.reference("serveries/" + servery + "/+" + number)
