@@ -105,13 +105,14 @@ app = Flask(__name__)
 
 @app.route('/addUser', methods=['POST'])
 def addUser():
-
-	print("adding user")
-
+	resp = MessagingResponse()
 	body = request.form['Body']
 	number = request.form['From']
+	print("Body: ", body, "Number: ", number)
 
-	print("servery: ", body, "number: ", number)
+	if body.strip().upper() == "MENU":
+		resp.message(getMenu(getServery(number)))
+		return str(resp), 200
 
 	if 'w' in body:
 		servery = "West"
@@ -128,33 +129,30 @@ def addUser():
 	else:
 		return False
 
-	serveryRef = db.reference("serveries/" + servery + "/" + number)
+	serveryRef = db.reference("serveries/" + servery + "/+" + number)
 	serveryRef.set(number)
 
-	usersRef = db.reference("users/" + number)
+	usersRef = db.reference("users/+" + number)
 	usersRef.set(servery)
 
-	print("added user to firebase")
+	print("Added user " + str(number) + " to firebase")
 
-	resp = MessagingResponse()
 	resp.message("You'll receive the menu for {} servery".format(servery))
-
-	# r = requests.put("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json", data='{"+1' + str(number) + '":"+1' + str(number) + '"}') # Data confroms to {"key":"value"}, as a string
-	# r2 = requests.put("https://servery-cef7b.firebaseio.com/users.json", data='{"+1' + str(number) + '":"' + servery + '"}')
-
-	# print(r, r2)
 
 	return str(resp), 200
 
 def getUsersOfServery(servery):
-
-	# r = requests.get("https://servery-cef7b.firebaseio.com/serveries/" + servery + ".json")
-	# users = json.loads(r.text).keys()
-	# print(users)
-
 	ref = db.reference("serveries/" + servery)
 	print(ref.get().keys())
 	return ref.get().keys()
+
+def getMenu(servery):
+	ref = db.reference("menus/" + servery)
+	return ref.get()
+
+def getServery(number):
+	ref = db.reference("users/" + number)
+	return ref.get()
 
 ################
 # Web scraping
