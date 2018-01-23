@@ -108,28 +108,28 @@ def addUser():
 
 	print("adding user")
 
-	servery = request.form['Body']
+	body = request.form['Body']
 	number = request.form['From']
 
-	print("servery: ", servery, "number: ", number)
+	print("servery: ", body, "number: ", number)
 
-	if 'w' in servery:
+	if 'w' in body:
 		servery = "West"
-	elif 'bel' in servery:
+	elif 'bel' in body:
 		servery = "Seibel"
-	elif 'n' in servery:
+	elif 'n' in body:
 		servery = "North"
-	elif 'k' in servery:
+	elif 'k' in body:
 		servery = "Baker"
-	elif 'ri' in servery:
+	elif 'ri' in body:
 		servery = "SidRich"
-	elif 'ou' in servery:
+	elif 'ou' in body:
 		servery = "South"
 	else:
 		return False
 
 	serveryRef = db.reference("serveries/" + servery + "/" + number)
-	serveryRef.setValue(number)
+	serveryRef.set(number)
 
 	usersRef = db.reference("users/" + number)
 	usersRef.set(servery)
