@@ -2,7 +2,6 @@ import urllib3
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 import requests
-import json
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
