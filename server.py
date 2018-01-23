@@ -81,6 +81,8 @@ def addUser():
 	# New user
 	if getServery(number) is None and parseServeryName(body) is not None:
 		addUserToServery(number, parseServeryName(body), False)
+		resp.message("You'll receive the menu for {} servery".format(servery))
+		return str(resp), 200
 
 	# Asking for menu of default servery
 	if body == "menu":
@@ -89,8 +91,8 @@ def addUser():
 
 	# Asking for menu of non-default servery
 	if getServery(number) is not None and parseServeryName(body) is not None:
-		menu = getMenu(parseServeryName(body))
-		sendMessage(number, menu)
+		resp.message(getMenu(parseServeryName(body)))
+		return str(resp), 200
 
 	# Updating servery preference
 	if len(body.split(" ")) == 2 and body.split(" ")[0] == "set":
