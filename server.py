@@ -74,41 +74,53 @@ app = Flask(__name__)
 @app.route('/addUser', methods=['POST'])
 def addUser():
 	resp = MessagingResponse()
-	body = request.form['Body']
+	body = request.form['Body'].strip().lower()
 	number = request.form['From']
 	print("Body: ", body, "Number: ", number)
 
-	if body.strip().upper() == "MENU":
+	# New user
+	if getServery(number) is None and parseServeryName(body) is not None:
+		addUserToServery(number, parseServeryName(body))
+
+	# Asking for menu of default servery
+	if body == "menu":
 		resp.message(getMenu(getServery(number)))
 		return str(resp), 200
 
-	if 'we' in body:
-		servery = "West"
-	elif 'bel' in body:
-		servery = "Seibel"
-	elif 'no' in body:
-		servery = "North"
-	elif 'ak' in body:
-		servery = "Baker"
-	elif 'ri' in body:
-		servery = "SidRich"
-	elif 'ou' in body:
-		servery = "South"
-	else:
-		resp.message("Sorry, I don't understand. Text \"menu\" for the menu.")
-		return str(resp), 200
+	# Asking for menu of non-default servery
+	if getServery(number) is not None and parseServeryName(body) is not None:
+		menu = getMenu(parseServeryName(body))
+		sendMessage(number, menu)
 
-	serveryRef = db.reference("serveries/" + servery + "/+" + number)
-	serveryRef.set(number)
-
-	usersRef = db.reference("users/+" + number)
-	usersRef.set(servery)
-
-	print("Added user " + str(number) + " to firebase")
-
-	resp.message("You'll receive the menu for {} servery".format(servery))
-
+	# Updating servery preference
+	if len(body.split(" ")) == 2 and body.split(" ")[0] == "set":
+		servery = parseServeryName(bod.split(" ")[1])
+		if servery is not None:
+			addUserToServery(number, servery, True)
+			resp.message("You'll receive the menu for {} servery".format(servery))
+			return str(resp), 200
+	
+	resp.message("Sorry, I don't understand. Text \"menu\" for the menu.")
 	return str(resp), 200
+
+
+def parseServeryName(input):
+	input = input.strip().lower() 
+	
+	if 'we' in input:
+		return "West"
+	elif 'bel' in input:
+		return "Seibel"
+	elif 'no' in input:
+		return "North"
+	elif 'ak' in input:
+		return "Baker"
+	elif 'ri' in input:
+		return "SidRich"
+	elif 'ou' in input:
+		return "South"
+	
+	return None
 
 def getUsersOfServery(servery):
 	ref = db.reference("serveries/" + servery)
@@ -122,6 +134,25 @@ def getMenu(servery):
 def getServery(number):
 	ref = db.reference("users/+" + number)
 	return ref.get()
+
+# Third parameter "isUpdate" is a boolean indicating
+# whether this user has a previous entry or not
+def addUserToServery(number, servery, isUpdate):
+	if isUpdate:
+		# Remove from existing servery
+		oldServery = getServery(number)
+		oldServeryRef = db.reference("serveries/" + oldServery + "/+" + number)
+		oldServeryRef.set("null")
+
+	# Add to new servery
+	serveryRef = db.reference("serveries/" + servery + "/+" + number)
+	serveryRef.set(number)
+
+	# Update user entry
+	usersRef = db.reference("users/+" + number)
+	usersRef.set(servery)
+
+	print("Added user " + str(number) + " to firebase")
 
 
 ################
