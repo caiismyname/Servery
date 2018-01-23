@@ -13,37 +13,6 @@ import os
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
 
-class Servery:
-	def __init__(self, name):
-		self.name = name
-		self.menuItems = []
-
-	def setHTMLMenu(self, HTMLMenu):
-		self.HTMLMenu = HTMLMenu
-		self.parseMenuItems(self.HTMLMenu)
-
-	def parseMenuItems(self, menu):
-		start = 0
-		while True:
-			start = menu.find("menu-item\">", start)
-			if start == -1: # No more menu items
-				break
-			currentPosition = start + 11 # +11 to offset the "menu-item"> part
-			# Read the menu item, until the closing </div> tag
-			entry = menu[currentPosition]
-			while menu[currentPosition + 1] != "<":
-				currentPosition += 1
-				entry += menu[currentPosition]
-
-			self.menuItems.append(entry)
-			start = currentPosition
-
-	def getMenuItems(self):
-		return self.menuItems
-
-	def __str__(self):
-		return str(self.name) + ": " + str(self.menuItems)[1:-1].replace("'", "")
-
 ################
 # Twilio
 ################
@@ -155,38 +124,6 @@ def getServery(number):
 	ref = db.reference("users/+" + number)
 	return ref.get()
 
-################
-# Web scraping
-################
-
-def getWebsite():
-	# Pull webpage
-	http = urllib3.PoolManager()
-	diningSite = str(http.request('GET', "http://dining.rice.edu").data)
-
-	# Get menu portion
-	startIndex = diningSite.find('<div id="main">')
-	endIndex = diningSite.find("<!--//End Main-->")
-	site = diningSite[startIndex:endIndex]
-
-	return site
-
-def getMenusFromSite(site):
-	menuMap = {}
-
-	# Find inidividual menus
-	for s in serveries:
-		servery = Servery(s)
-
-		startIndex = site.find("<div class=\"servery-title\" id=\"" + s)
-		endIndex = site.find("<div class=\"servery-title\"", startIndex + 1)
-		servery.setHTMLMenu(site[startIndex:endIndex])
-
-		menuMap[s] = servery
-		print(servery)
-
-	return menuMap
-
 
 ################
 # Put it all together
@@ -198,25 +135,6 @@ def initEnviron():
 	initTwilio()
 	initFirebase()
 
-def update():
-	initEnviron()
-	menuMap = getMenusFromSite(getWebsite())
-
-	for servery in serveries:
-		if servery == "Seibel":
-			menu = menuMap[servery]
-			users = getUsersOfServery(servery)
-
-			for user in users:
-				sendMessage(user, str(menu))
-
-
-# update()
 
 initEnviron()
-# port = int(os.environ.get('PORT', 33507))
-# app.run(debug=True, port=port)
-
-
-
 

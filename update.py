@@ -162,6 +162,5 @@ def update():
 			if user != "foo":
 				sendMessage(user, str(menu))
 
-
 update()
 
