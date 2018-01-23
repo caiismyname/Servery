@@ -80,7 +80,7 @@ def addUser():
 
 	# New user
 	if getServery(number) is None and parseServeryName(body) is not None:
-		addUserToServery(number, parseServeryName(body))
+		addUserToServery(number, parseServeryName(body), False)
 
 	# Asking for menu of default servery
 	if body == "menu":
