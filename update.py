@@ -134,7 +134,6 @@ def getMenusFromSite(site):
 		servery.setHTMLMenu(site[startIndex:endIndex])
 
 		menuMap[s] = servery
-		storeMenu(s, str(servery))
 		print(servery)
 
 	return menuMap
@@ -155,11 +154,12 @@ def update():
 	menuMap = getMenusFromSite(getWebsite())
 
 	for servery in serveries:
-		if servery == "Seibel":
-			menu = menuMap[servery]
-			users = getUsersOfServery(servery)
+		menu = menuMap[servery]
+		storeMenu(servery, str(menu))
+		users = getUsersOfServery(servery)
 
-			for user in users:
+		for user in users:
+			if user != "foo":
 				sendMessage(user, str(menu))
 
 
