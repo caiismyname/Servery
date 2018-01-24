@@ -98,7 +98,7 @@ def addUser():
 			return str(resp), 200
 
 		# Help
-		if (body == "help"):
+		if (body == "instructions" or body == "commands" or body == "what do" or body == "how"):
 			print("Sending help commands.")
 			resp.message('Text "menu" to get the menu for your home servery (' + getServery(number) + '). Text "set [servery]" to change home serveries. Text the name of any servery to see its menu. Text "stop" to unsubscribe.')
 			return str(resp), 200
