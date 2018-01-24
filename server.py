@@ -84,6 +84,7 @@ def addUser():
 	try:
 		# Unsubscribe
 		if body == "stop" or body == "stopall" or body == "unsubscribe" or body == "cancel" or body == "end" or body == "quit":
+			print("Unsubscribing " + str(number))
 			removeUser(number)
 			return '', 200
 
@@ -92,6 +93,7 @@ def addUser():
 			resp.message("What servery would you like to subscribe to?")
 			return str(resp), 200
 		elif (body == "start" or body == "yes" or body == "unstop") and getServery(number) is not None:
+			print("Resubscribing " + str(number))
 			resp.message("You're already subscribed to " + getServery(number) + "")
 			return str(resp), 200
 
