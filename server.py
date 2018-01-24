@@ -88,8 +88,11 @@ def addUser():
 			return '', 200
 
 		# Resubscribe
-		if body == "start" or body == "yes" or body == "unstop":
+		if (body == "start" or body == "yes" or body == "unstop") and getServery(number) == None:
 			resp.message("What servery would you like to subscribe to?")
+			return str(resp), 200
+		elif (body == "start" or body == "yes" or body == "unstop") and getServery(number) is not None:
+			resp.message("You're already subscribed to " + getServery(number) + "")
 			return str(resp), 200
 
 		# New user
