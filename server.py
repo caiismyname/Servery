@@ -82,6 +82,16 @@ def addUser():
 	print("Body: ", body, "Number: ", number)
 
 	try:
+		# Unsubscribe
+		if body == "stop" or body == "stopall" or body == "unsubscribe" or body == "cancel" or body == "end" or body == "quit":
+			removeUser(number)
+			return '', 200
+
+		# Resubscribe
+		if body == "start" or body == "yes" or body == "unstop":
+			resp.message("What servery would you like to subscribe to?")
+			return str(resp), 200
+
 		# New user
 		if getServery(number) is None and parseServeryName(body) is not None:
 			print("Adding new user " + str(number) + " to " + parseServeryName(body))
@@ -121,17 +131,17 @@ def addUser():
 def parseServeryName(input):
 	input = input.strip().lower() 
 	
-	if 'we' in input:
+	if 'west' in input:
 		return "West"
-	elif 'bel' in input:
+	elif 'bel' in input or 'ble' in input:
 		return "Seibel"
-	elif 'no' in input:
+	elif 'north' in input:
 		return "North"
-	elif 'ak' in input:
+	elif 'baker' in input:
 		return "Baker"
-	elif 'ri' in input:
+	elif 'rich' in input or 'sid' in input:
 		return "SidRich"
-	elif 'ou' in input:
+	elif 'south' in input:
 		return "South"
 	
 	return None
