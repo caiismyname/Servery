@@ -97,6 +97,12 @@ def addUser():
 			resp.message("You're already subscribed to " + getServery(number) + "")
 			return str(resp), 200
 
+		# Help
+		if (body == "help"):
+			print("Sending help commands.")
+			resp.message('Text "menu" to get the menu for your home servery (' + getServery(number) + '). Text "set [servery]" to change home serveries. Text the name of any servery to see its menu. Text "stop" to unsubscribe.')
+			return str(resp), 200
+
 		# New user
 		if getServery(number) is None and parseServeryName(body) is not None:
 			print("Adding new user " + str(number) + " to " + parseServeryName(body))
