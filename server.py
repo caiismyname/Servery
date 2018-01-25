@@ -107,7 +107,7 @@ def addUser():
 		if getServery(number) is None and parseServeryName(body) is not None:
 			print("Adding new user " + str(number) + " to " + parseServeryName(body))
 			addUserToServery(number, parseServeryName(body), False)
-			resp.message("You'll receive the menu for {} servery".format(parseServeryName(body)))
+			resp.message("You'll receive the menu for {} servery an hour before lunch and dinner. Text the name of any other servery to see their next menu.".format(parseServeryName(body)))
 			return str(resp), 200
 
 		# Asking for menu of default servery
