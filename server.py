@@ -175,6 +175,8 @@ def getMenu(servery):
 
 def getServeries(number):
 	ref = db.reference("users/+" + number)
+	if ref.get() is None:
+		return None
 	return ref.get().keys()
 
 def addUserToServery(number, servery):
