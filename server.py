@@ -82,7 +82,7 @@ def addUser():
 	print("Body: ", body, "Number: ", number)
 
 	try:
-		servery = getServery(number)
+		serveries = getServeries(number)
 
 		# Unsubscribe
 		if body == "stop" or body == "stopall" or body == "unsubscribe" or body == "cancel" or body == "end" or body == "quit":
@@ -91,47 +91,52 @@ def addUser():
 			return '', 200
 
 		# Resubscribe
-		if (body == "start" or body == "yes" or body == "unstop") and servery == None:
+		if (body == "start" or body == "yes" or body == "unstop") and serveries == None:
 			resp.message("What servery would you like to subscribe to?")
 			return str(resp), 200
-		elif (body == "start" or body == "yes" or body == "unstop") and servery is not None:
+		elif (body == "start" or body == "yes" or body == "unstop") and serveries is not None:
 			print("Resubscribing " + str(number))
-			resp.message("You're already subscribed to " + servery + "")
+			resp.message("You're already subscribed to " + serveries + "")
 			return str(resp), 200
 
 		# Help
 		if (body == "instructions" or body == "commands" or body == "what do" or body == "how"):
 			print("Sending help commands.")
-			resp.message('Text "menu" to get the menu for your home servery (' + servery + '). Text "set [servery]" to change home serveries. Text the name of any servery to see its menu. Text "stop" to unsubscribe.')
+			resp.message('You\'re subscribed to {}. Text the name of any servery to see its next menu. Text "add [servery]" to subscribe to another servery, or "remove [servery]" to unsubscribe. Text "stop" to unsubscribe from this service.'.format(getServeries(number)))
 			return str(resp), 200
 
 		# New user
 		if servery is None and parseServeryName(body) is not None:
 			print("Adding new user " + str(number) + " to " + parseServeryName(body))
 			addUserToServery(number, parseServeryName(body), False)
-			resp.message("You'll receive the menu for {} servery an hour before lunch and dinner. Text the name of any other servery to see their next menu.".format(parseServeryName(body)))
-			return str(resp), 200
-
-		# Asking for menu of default servery
-		if body == "menu":
-			print("Sending menu")
-			resp.message(getMenu(servery))
+			resp.message("You'll receive the menu for {} servery an hour before lunch and dinner. Text the name of any servery to see its next menu. Text \"add [servery]\" to subscribe to another servery, or \"remove [servery]\" to unsubcribe.".format(parseServeryName(body)))
 			return str(resp), 200
 
 		# Updating servery preference
 		# This has to come before asking menu of non-default servery
 		# because the cases overlap.
-		if len(body.split(" ")) == 2 and body.split(" ")[0] == "set":
-			print("Updating preference for " + str(number) + " to " + parseServeryName(body.split(" ")[1]))
+
+		# Subscribing to another servery
+		if len(body.split(" ")) == 2 and body.split(" ")[0] == "add":
+			print("Adding new home servery for " + str(number) + ": " + parseServeryName(body.split(" ")[1]))
 			newServery = parseServeryName(body.split(" ")[1])
 			if newServery is not None:
 				addUserToServery(number, newServery, True)
 				resp.message("You'll receive the menu for {} servery".format(newServery))
 				return str(resp), 200
 
-		# Asking for menu of non-default servery
+		# Removing a servery subscription
+		if len(body.split(" ")) == 2 and body.split(" ")[0] == "remove":
+			print("Removing servery for " + str(number) + ": " + parseServeryName(body.split(" ")[1]))
+			newServery = parseServeryName(body.split(" ")[1])
+			if newServery is not None:
+				removeUserFromServery(number, newServery, True)
+				resp.message("You will not receive the menu for {} servery anymore".format(newServery))
+				return str(resp), 200
+
+		# Asking for menu of servery
 		if servery is not None and parseServeryName(body) is not None:
-			print("Sending menu for non default servery")
+			print("Sending menu for arbitrary servery")
 			resp.message(getMenu(parseServeryName(body)))
 			return str(resp), 200
 		
@@ -168,32 +173,36 @@ def getMenu(servery):
 	ref = db.reference("menus/" + servery)
 	return ref.get()
 
-def getServery(number):
+def getServeries(number):
 	ref = db.reference("users/+" + number)
-	return ref.get()
+	return ref.get().keys()
 
-# Third parameter "isUpdate" is a boolean indicating
-# whether this user has a previous entry or not
-def addUserToServery(number, servery, isUpdate):
-	if isUpdate:
-		# Remove from existing servery
-		oldServery = getServery(number)
-		oldServeryRef = db.reference("serveries/" + oldServery + "/+" + number)
-		oldServeryRef.delete()
-
+def addUserToServery(number, servery):
 	# Add to new servery
 	serveryRef = db.reference("serveries/" + servery + "/+" + number)
 	serveryRef.set(number)
 
 	# Update user entry
-	usersRef = db.reference("users/+" + number)
+	usersRef = db.reference("users/+" + number + "/" + servery)
 	usersRef.set(servery)
 
 	print("Added user " + str(number) + " to firebase")
 
-def removeUser(number):
-	serveryRef = db.reference("serveries/" + getServery(number) + "/+" + number)
+def removeUserFromServery(number, servery):
+	# Remove from servery
+	serveryRef = db.reference("serveries/" + servery + "/+" + number)
 	serveryRef.delete()
+
+	# Update user entry
+	usersRef = db.reference("users/+" + number + "/" + servery)
+	usersRef.delete()
+
+
+def removeUser(number):
+	serveriesSubscribedTo = getServeries(number)
+	for servery in serveriesSubscribedTo:
+		serveryRef = db.reference("serveries/" + servery + "/+" + number)
+		serveryRef.delete()
 
 	userRef = db.reference("users/+" + number)
 	userRef.delete()
