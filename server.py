@@ -108,7 +108,7 @@ def addUser():
 		# New user
 		if serveries is None and parseServeryName(body) is not None:
 			print("Adding new user " + str(number) + " to " + parseServeryName(body))
-			addUserToServery(number, parseServeryName(body), False)
+			addUserToServery(number, parseServeryName(body))
 			resp.message("You'll receive the menu for {} servery an hour before lunch and dinner. Text the name of any servery to see its next menu. Text \"add [servery]\" to subscribe to another servery, or \"remove [servery]\" to unsubcribe.".format(parseServeryName(body)))
 			return str(resp), 200
 
@@ -121,7 +121,7 @@ def addUser():
 			print("Adding new home servery for " + str(number) + ": " + parseServeryName(body.split(" ")[1]))
 			newServery = parseServeryName(body.split(" ")[1])
 			if newServery is not None:
-				addUserToServery(number, newServery, True)
+				addUserToServery(number, newServery)
 				resp.message("You'll receive the menu for {} servery".format(newServery))
 				return str(resp), 200
 
@@ -130,7 +130,7 @@ def addUser():
 			print("Removing servery for " + str(number) + ": " + parseServeryName(body.split(" ")[1]))
 			newServery = parseServeryName(body.split(" ")[1])
 			if newServery is not None:
-				removeUserFromServery(number, newServery, True)
+				removeUserFromServery(number, newServery)
 				resp.message("You will not receive the menu for {} servery anymore".format(newServery))
 				return str(resp), 200
 
