@@ -122,7 +122,7 @@ def addUser():
 			newServery = parseServeryName(body.split(" ")[1])
 			if newServery is not None:
 				addUserToServery(number, newServery)
-				resp.message("You'll receive the menu for {} servery".format(newServery))
+				resp.message("You will now also receive the menu for {} servery".format(newServery))
 				return str(resp), 200
 
 		# Removing a servery subscription
