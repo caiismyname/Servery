@@ -4,6 +4,8 @@ from firebase_admin import credentials
 from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
 import os
+import datetime
+
 
 serveries = ["Seibel", "North", "Baker", "South", "West", "SidRich"]
 
@@ -36,20 +38,35 @@ def initFirebase():
 	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
 
-
 def initEnviron():
 	load_dotenv(find_dotenv())
 	initFirebase()
 
 def countAllUsers():
 	ref = db.reference("users/")
-	print(str(len(ref.get().keys())) + " total users")
+	return len(ref.get().keys())
 
-def countUsersPerServery():
+def countUsersPerServery(servery):
+	ref = db.reference("serveries/" + servery)
+	return len(ref.get().keys())
+
+
+def saveStats():
+	stats = {}
+	stats['total'] = countAllUsers()
+
 	for servery in serveries:
-			ref = db.reference("serveries/" + servery)
-			print("\t" + servery + ":\t" + str(len(ref.get().keys())))
+		stats[servery] = countUsersPerServery(servery)
+
+	now = datetime.datetime.now()
+	date = str(now.month) + "-" + str(now.day) + "-" + str(now.year)
+
+	print("Logging daily stats for: " + date)
+	print(stats)
+
+	ref = db.reference("statistics/" + date)
+	ref.set(stats)
 
 initEnviron()
-countAllUsers()
-countUsersPerServery()
+
+saveStats()
