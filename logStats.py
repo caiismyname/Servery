@@ -59,12 +59,19 @@ def saveStats():
 		stats[servery] = countUsersPerServery(servery)
 
 	now = datetime.datetime.now()
-	date = str(now.month) + "-" + str(now.day) + "-" + str(now.year)
+	date = str(now.year) + "-" + str(now.month) + "-" + str(now.day)
+
+	time = ""
+
+	if (now.hour < 12):
+		time = "AM"
+	else:
+		time = "PM"
 
 	print("Logging daily stats for: " + date)
 	print(stats)
 
-	ref = db.reference("statistics/" + date)
+	ref = db.reference("statistics/" + date + "/" + time)
 	ref.set(stats)
 
 initEnviron()
