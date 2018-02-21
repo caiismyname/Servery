@@ -140,7 +140,7 @@ def addUser():
 			resp.message(getMenu(parseServeryName(body)))
 			return str(resp), 200
 		
-		resp.message("Sorry, I don't understand. Text \"menu\" for the menu.")
+		resp.message("Sorry, I don't understand. Text the name of a servery to see its menu.")
 		return str(resp), 200
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
