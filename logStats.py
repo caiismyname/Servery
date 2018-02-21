@@ -5,6 +5,7 @@ from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
 import os
 import datetime
+import time
 
 
 serveries = ["Seibel", "North", "Baker", "South", "West", "SidRich"]
@@ -61,17 +62,12 @@ def saveStats():
 	now = datetime.datetime.now()
 	date = str(now.year) + "-" + str(now.month) + "-" + str(now.day)
 
-	time = ""
+	timeModifier = time.strftime("%p")
 
-	if (now.hour < 12):
-		time = "AM"
-	else:
-		time = "PM"
-
-	print("Logging daily stats for: " + date)
+	print("Logging daily stats for: " + date + "-" + timeModifier)
 	print(stats)
 
-	ref = db.reference("statistics/" + date + "/" + time)
+	ref = db.reference("statistics/" + date + "/" + timeModifier)
 	ref.set(stats)
 
 initEnviron()
