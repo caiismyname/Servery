@@ -118,7 +118,7 @@ def addUser():
 
 		# Subscribing to another servery
 		if len(body.split(" ")) == 2 and body.split(" ")[0] == "add":
-			print("Adding new home servery for " + str(number) + ": " + parseServeryName(body.split(" ")[1]))
+			print("Adding new servery for " + str(number) + ": " + parseServeryName(body.split(" ")[1]))
 			newServery = parseServeryName(body.split(" ")[1])
 			if newServery is not None:
 				addUserToServery(number, newServery)
@@ -176,7 +176,12 @@ def getMenu(servery):
 def getServeries(number):
 	ref = db.reference("users/+" + number)
 	if ref.get() is None:
-		return None
+		latentRef = db.reference("latentUsers/+" + number)
+		if latentRef.get() is None:
+			return None
+		else:
+			return "latent"
+
 	return ref.get().keys()
 
 def addUserToServery(number, servery):
@@ -188,7 +193,16 @@ def addUserToServery(number, servery):
 	usersRef = db.reference("users/+" + number + "/" + servery)
 	usersRef.set(servery)
 
+	# If it's their first servery after going latent, need to remove from latent list
+	latentRef = db.reference("latentUsers/+" + number)
+	if latentRef.get() is not None:
+		latentRef.delete()
+
 	print("Added user " + str(number) + " to firebase")
+
+def addLatentUser(number):
+	userRef = db.reference("latentUsers/+" + number)
+	userRef.set(number)
 
 def removeUserFromServery(number, servery):
 	# Remove from servery
@@ -199,15 +213,24 @@ def removeUserFromServery(number, servery):
 	usersRef = db.reference("users/+" + number + "/" + servery)
 	usersRef.delete()
 
+	# Check if they're going into latent user mode
+	oldRef = db.reference("users/+" + number)
+	if oldRef.get() is None:
+		addLatentUser(number)
+
 
 def removeUser(number):
 	serveriesSubscribedTo = getServeries(number)
-	for servery in serveriesSubscribedTo:
-		serveryRef = db.reference("serveries/" + servery + "/+" + number)
-		serveryRef.delete()
+	if serveriesSubscribedTo == "latent":
+		latentRef = db.reference("latentUsers/+" + number)
+		latentRef.delete()
+	else:
+		for servery in serveriesSubscribedTo:
+			serveryRef = db.reference("serveries/" + servery + "/+" + number)
+			serveryRef.delete()
 
-	userRef = db.reference("users/+" + number)
-	userRef.delete()
+		userRef = db.reference("users/+" + number)
+		userRef.delete()
 
 	print("Removed " + number)
 
