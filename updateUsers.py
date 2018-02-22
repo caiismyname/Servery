@@ -7,8 +7,13 @@ from firebase_admin import credentials
 from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
 import os
+from datetime import date
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
+northServeries = ["North", "West"]
+southServeries = ["Seibel", "SidRich", "South", "Baker"]
+northWeekendServery = "North"
+southWeekendServery = "Seibel"
 
 ################
 # Twilio
@@ -77,6 +82,28 @@ def getMenu(servery):
 	ref = db.reference("menus/" + servery)
 	return ref.get()
 
+def getAllUsers():
+	ref = db.reference("users")
+	return ref.get()
+
+# 'user' should be a dictionary of the serveries a user is subscribed to
+# where the key and value are the same.
+def isNorth(user):
+	for servery in northServeries:
+		if servery in user:
+			return True
+
+	return False
+
+# 'user' should be a dictionary of the serveries a user is subscribed to
+# where the key and value are the same.
+def isSouth(user):
+	for servery in southServeries:
+		if servery in user:
+			return True
+
+	return False
+
 ################
 # Put it all together
 ################
@@ -88,15 +115,36 @@ def initEnviron():
 	initFirebase()
 
 def updateUsers():
-	initEnviron()
+	weekdays = [1,2,3,4,5]
+	today = date.today()
+	isWeekday = today.isoweekday() in weekdays
 
+	menus = {}
 	for servery in serveries:
-		menu = getMenu(servery)
-		users = getUsersOfServery(servery)
+		menus[servery] = getMenu(servery)
 
-		for user in users:
-			if user != "foo":
-				sendMessage(user, str(menu))
+	# On weekdays, go through serveries and send menus for everyone subscribed to a servery
+	if isWeekday:
+		for servery in serveries:
+			menu = menus[servery]
+			users = getUsersOfServery(servery)
 
+			for user in users:
+				if user != "foo":
+					sendMessage(user, str(menu))
+	# On weekends, iterate through users and send menu for north if subscribed to 
+	# a north servery, seibel if south
+	else:
+		allUsers = getAllUsers()
+		for user in allUsers:
+			if isNorth(allUsers[user]):
+	 			sendMessage(user, str(menus[northWeekendServery]))
+
+			if isSouth(allUsers[user]):
+				sendMessage(user, str(menus[southWeekendServery]))
+
+
+
+initEnviron()
 updateUsers()
 
