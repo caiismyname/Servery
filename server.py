@@ -150,14 +150,8 @@ def addUser():
 def hostHoot():
 	ref = db.reference("hoot/")
 	foods = ref.get()
-	# for k,v in foods.items():
-	# 	if v.lower == "true":
-	# 		foods[k] = True
-	# 	else:
-	# 		foods[k] = False
 
 	return render_template('hootForm.html', foods=foods)
-
 
 @app.route('/updateHoot', methods=['POST'])
 def updateHoot():
@@ -174,6 +168,21 @@ def updateHoot():
 
 
 		return redirect(url_for('hostHoot'))
+
+@app.route('/hootHotline')
+def hootHotline():
+	ref = db.reference('hoot/')
+	foods = ref.get()
+	inStock = []
+	outOfStock = []
+
+	for food, status in foods.items():
+		if status:
+			outOfStock.append(food)
+		else:
+			inStock.append(food)
+
+	return render_template('hootHotline.html', inStock=inStock, outOfStock=outOfStock)
 
 
 ####################
@@ -275,10 +284,10 @@ def removeUser(number):
 # Sets up enviornment variables for secrets
 def initEnviron():
 	load_dotenv(find_dotenv())
-	initTwilio()
+	# initTwilio()
 	initFirebase()
 
 
 initEnviron()
 
-# app.run()
+app.run()

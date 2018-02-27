@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Hoot Hotline</title>
+ 
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/hoot.js">
+</head>
+ 
+<body> 
+    <div class="container">
+        <br>
+        <div class="row">
+            <h1>Hoot Hotline: What's in stock</h1>
+        </div>
+        <br>
+ 
+        <div class="row">
+            <div class="col-lg-6">
+                <h1 style="color:green">In Stock</h1>
+                <ul class="list-group">
+                    {% for food in inStock %}
+                        <li class="list-group-item">{{ food }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="col-lg-6">
+                <h1 style="color:red">Ran out</h1>
+                <ul class="list-group">
+                    {% for food in outOfStock %}
+                        <li class="list-group-item">{{ food }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <footer class="footer">
+            <p>David Cai and Rice Hoot</p>
+        </footer>
+ 
+    </div>
+</body>
+ 
+</html>
