@@ -6,11 +6,12 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, request
+from flask import Flask, request, render_template, redirect, url_for
 import os
 
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
+hootFoods = ["Chicken", "Pizza", "Sandwich", "Doughnuts"]
 
 ################
 # Twilio
@@ -145,6 +146,39 @@ def addUser():
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
 
+@app.route('/hootForm')
+def hostHoot():
+	ref = db.reference("hoot/")
+	foods = ref.get()
+	# for k,v in foods.items():
+	# 	if v.lower == "true":
+	# 		foods[k] = True
+	# 	else:
+	# 		foods[k] = False
+
+	return render_template('hootForm.html', foods=foods)
+
+
+@app.route('/updateHoot', methods=['POST'])
+def updateHoot():
+	print("received hoot update")
+	if request.method == "POST":
+		outOfStock = request.form.getlist("foodItem")
+
+		for food in hootFoods:
+			ref = db.reference("hoot/" + food)
+			if food not in outOfStock:
+				ref.set(False)
+			else:
+				ref.set(True)
+
+
+		return redirect(url_for('hostHoot'))
+
+
+####################
+# Helper Functions
+####################
 
 def parseServeryName(input):
 	input = input.strip().lower() 
@@ -218,7 +252,6 @@ def removeUserFromServery(number, servery):
 	if oldRef.get() is None:
 		addLatentUser(number)
 
-
 def removeUser(number):
 	serveriesSubscribedTo = getServeries(number)
 	if serveriesSubscribedTo == "latent":
@@ -248,3 +281,4 @@ def initEnviron():
 
 initEnviron()
 
+# app.run()
