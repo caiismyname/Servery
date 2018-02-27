@@ -43,9 +43,16 @@ def initEnviron():
 	load_dotenv(find_dotenv())
 	initFirebase()
 
-def countAllUsers():
+def countActiveUsers():
 	ref = db.reference("users/")
 	return len(ref.get().keys())
+
+def countLatentUsers():
+	ref = db.reference("latentUsers/")
+	if (ref.get() is not None):
+		return len(ref.get().keys())
+	else:
+		return 0
 
 def countUsersPerServery(servery):
 	ref = db.reference("serveries/" + servery)
@@ -54,7 +61,8 @@ def countUsersPerServery(servery):
 
 def saveStats():
 	stats = {}
-	stats['total'] = countAllUsers()
+	stats['total'] = countActiveUsers()
+	stats['latent'] = countLatentUsers()
 
 	for servery in serveries:
 		stats[servery] = countUsersPerServery(servery)
