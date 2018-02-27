@@ -11,7 +11,7 @@ import os
 
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
-hootFoods = ["Chicken", "Pizza", "Sandwich", "Doughnuts"]
+# hootFoods = ["Chicken", "Pizza", "Sandwich", "Doughnuts"]
 
 ################
 # Twilio
@@ -148,7 +148,7 @@ def addUser():
 
 @app.route('/hootForm')
 def hostHoot():
-	ref = db.reference("hoot/")
+	ref = db.reference("hoot/all")
 	foods = ref.get()
 
 	return render_template('hootForm.html', foods=foods)
@@ -158,29 +158,35 @@ def updateHoot():
 	print("received hoot update")
 	if request.method == "POST":
 		outOfStock = request.form.getlist("foodItem")
+		allFoodsRef = db.reference("hoot/all")
 
-		for food in hootFoods:
-			ref = db.reference("hoot/" + food)
+		for food in allFoodsRef.get().keys():
+			ref = db.reference("hoot/all/" + food)
 			if food not in outOfStock:
 				ref.set(False)
+				foodRef = db.reference('hoot/inStock/' + food)
+				foodRef.set(food)
+				foodRef = db.reference('hoot/outOfStock/' + food)
+				foodRef.delete()
 			else:
 				ref.set(True)
+				foodRef = db.reference('hoot/outOfStock/' + food)
+				foodRef.set(food)
+				foodRef = db.reference('hoot/inStock/' + food)
+				foodRef.delete()
 
 
 		return redirect(url_for('hostHoot'))
 
 @app.route('/hootHotline')
 def hootHotline():
-	ref = db.reference('hoot/')
-	foods = ref.get()
-	inStock = []
-	outOfStock = []
+	inStockRef = db.reference('hoot/inStock')
+	outOfStockRef = db.reference('hoot/outOfStock')
+	inStock = list(inStockRef.get().keys())
+	outOfStock = list(outOfStockRef.get().keys())
 
-	for food, status in foods.items():
-		if status:
-			outOfStock.append(food)
-		else:
-			inStock.append(food)
+	inStock.remove('foo')
+	outOfStock.remove('foo')
 
 	return render_template('hootHotline.html', inStock=inStock, outOfStock=outOfStock)
 
@@ -275,6 +281,12 @@ def removeUser(number):
 		userRef.delete()
 
 	print("Removed " + number)
+
+def hootOutOfStockMessage():
+	ref = db.reference("hoot/outOfStock")
+	outOfStock = list(ref.get().keys())
+
+	return "The following foods are OUT OF STOCK: " + str(outOfStock)
 
 
 ################
