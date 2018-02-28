@@ -11,7 +11,6 @@ import os
 
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
-# hootFoods = ["Chicken", "Pizza", "Sandwich", "Doughnuts"]
 
 ################
 # Twilio
@@ -104,6 +103,12 @@ def addUser():
 		if (body == "instructions" or body == "commands" or body == "what do" or body == "how"):
 			print("Sending help commands.")
 			resp.message('You\'re subscribed to {}. Text the name of any servery to see its next menu. Text "add [servery]" to subscribe to another servery, or "remove [servery]" to unsubscribe. Text "stop" to unsubscribe from this service.'.format(getServeries(number)))
+			return str(resp), 200
+
+		#Hoot
+		if isHoot(body):
+			addToHoot(number)
+			resp.message(hootStockMessage())
 			return str(resp), 200
 
 		# New user
@@ -282,11 +287,22 @@ def removeUser(number):
 
 	print("Removed " + number)
 
-def hootOutOfStockMessage():
+def hootStockMessage():
 	ref = db.reference("hoot/outOfStock")
-	outOfStock = list(ref.get().keys())
+	
+	if ref.get() is not None:
+		outOfStock = list(ref.get().keys())
+		return "The following foods are OUT OF STOCK: " + str(outOfStock)
+	else:
+		return "All foods are in stock!"
 
-	return "The following foods are OUT OF STOCK: " + str(outOfStock)
+def isHoot(message):
+	return "hoot" in message.lower().strip()
+
+def addToHoot(number):
+	ref = db.reference("hootUsers/+" + str(number))
+	ref.set(str(number))
+
 
 
 ################

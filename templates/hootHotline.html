@@ -5,23 +5,34 @@
     <title>Hoot Hotline</title>
  
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../static/hoot.js">
 </head>
  
-<body> 
+<body style="background-color:#BEB1E2"> 
+    <div class="pageheader" style="background-color:#341f70; padding:20px; color:white">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3">
+                    <a href="http://www.thehootrice.com"><img src="http://static1.squarespace.com/static/52e693e1e4b04ab8b0fe14d4/t/568ba9eda2bab8d57519a720/1519515598720/?format=1500w" width="100%"></a>
+                </div>
+                <div class="col-lg-9">
+                    <h1 class='display-1'><b>Hoot Hotline</b></h1>
+                    <br>
+                    <h2>What's in stock</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <br>
-        <div class="row">
-            <h1>Hoot Hotline: What's in stock</h1>
-        </div>
         <br>
- 
+        <br>
         <div class="row">
             <div class="col-lg-6">
                 <h1 style="color:green">In Stock</h1>
                 <ul class="list-group">
                     {% for food in inStock %}
-                        <li class="list-group-item">{{ food }}</li>
+                        <li class="list-group-item" style="background-color:#dbd2f4">{{ food }}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -30,7 +41,7 @@
                 <h1 style="color:red">Ran out</h1>
                 <ul class="list-group">
                     {% for food in outOfStock %}
-                        <li class="list-group-item">{{ food }}</li>
+                        <li class="list-group-item" style="background-color:#dbd2f4">{{ food }}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -43,7 +54,7 @@
         <br>
         <br>
         <footer class="footer">
-            <p>David Cai and Rice Hoot</p>
+            <p>David Cai and <a href="http://www.thehootrice.com">Rice Hoot</a></p>
         </footer>
  
     </div>
