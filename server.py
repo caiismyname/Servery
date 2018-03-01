@@ -312,10 +312,10 @@ def addToHoot(number):
 # Sets up enviornment variables for secrets
 def initEnviron():
 	load_dotenv(find_dotenv())
-	# initTwilio()
+	initTwilio()
 	initFirebase()
 
 
 initEnviron()
 
-app.run()
+# app.run()
