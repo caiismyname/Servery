@@ -292,7 +292,11 @@ def hootStockMessage():
 	
 	if ref.get() is not None:
 		outOfStock = list(ref.get().keys())
-		return "The following foods are OUT OF STOCK: " + str(outOfStock)
+		foods = ""
+		for item in outOfStock:
+			if item != "foo":
+				foods += item + ", "
+		return "The following foods are OUT OF STOCK: " + foods[:-1]
 	else:
 		return "All foods are in stock!"
 
