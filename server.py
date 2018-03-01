@@ -299,7 +299,7 @@ def hootStockMessage():
 		foods = ""
 		for item in outOfStock:
 			foods += item + ", "
-		return "The following foods are OUT OF STOCK: " + foods[:-1]
+		return "The following foods are OUT OF STOCK: " + foods[:-2] # To strip trailing comma
 	else:
 		return "All foods are in stock!"
 
