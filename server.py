@@ -187,11 +187,15 @@ def updateHoot():
 def hootHotline():
 	inStockRef = db.reference('hoot/inStock')
 	outOfStockRef = db.reference('hoot/outOfStock')
-	inStock = list(inStockRef.get().keys())
-	outOfStock = list(outOfStockRef.get().keys())
 
-	inStock.remove('foo')
-	outOfStock.remove('foo')
+	inStock = []
+	outOfStock = []
+
+	if inStockRef.get() is not None:
+		inStock = list(inStockRef.get().keys())
+
+	if outOfStockRef.get() is not None:
+		outOfStock = list(outOfStockRef.get().keys())
 
 	return render_template('hootHotline.html', inStock=inStock, outOfStock=outOfStock)
 
@@ -294,8 +298,7 @@ def hootStockMessage():
 		outOfStock = list(ref.get().keys())
 		foods = ""
 		for item in outOfStock:
-			if item != "foo":
-				foods += item + ", "
+			foods += item + ", "
 		return "The following foods are OUT OF STOCK: " + foods[:-1]
 	else:
 		return "All foods are in stock!"
