@@ -5,20 +5,37 @@
     <title>Hoot Hotline Update Form</title>
  
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../static/hoot.js">
+
+    <style>
+        @media (max-width: 576px) {
+            label {
+                font-size: 28px;
+                margin-left: 10px;
+            }
+
+            input[type=checkbox] {
+                transform: scale(2.33);
+            }
+        }
+    </style>
 </head>
+
  
 <body> 
     <div class="container">
         <br>
         <div class="row">
-            <h1>Hoot Update Form</h1>
+            <div class="col-lg-12">
+                <h1>Hoot Update Form</h1>
+            </div>
         </div>
-        <br>
  
         <div class="row">
             <div class="col-lg-12">
                 <h2> Select the foods that are OUT of stock</h2>
+                <br>
+                <hr>
+                <br>
                 <form action="/updateHoot" method="post">
                     {% for food, outOfStock in foods.items() %}
                         <div class="form-check">
