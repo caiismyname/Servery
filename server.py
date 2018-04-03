@@ -183,6 +183,7 @@ def updateHoot():
 
 		return redirect(url_for('hostHoot'))
 
+@app.route('/')
 @app.route('/hootHotline')
 def hootHotline():
 	inStockRef = db.reference('hoot/inStock')
