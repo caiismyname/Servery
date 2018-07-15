@@ -71,7 +71,6 @@ def initFirebase():
 	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
 # Defining Flask here b/c it's only used as an endpoint for Twilio requests
-# And apprently this is the syntax for defining handlers.
 app = Flask(__name__)
 
 @app.route('/addUser', methods=['POST'])
@@ -103,12 +102,6 @@ def addUser():
 		if (body == "instructions" or body == "commands" or body == "what do" or body == "how"):
 			print("Sending help commands.")
 			resp.message('You\'re subscribed to {}. Text the name of any servery to see its next menu. Text "add [servery]" to subscribe to another servery, or "remove [servery]" to unsubscribe. Text "stop" to unsubscribe from this service.'.format(getServeries(number)))
-			return str(resp), 200
-
-		#Hoot
-		if isHoot(body):
-			addToHoot(number)
-			resp.message(hootStockMessage())
 			return str(resp), 200
 
 		# New user
@@ -150,55 +143,6 @@ def addUser():
 		return str(resp), 200
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
-
-@app.route('/hootForm')
-def hostHoot():
-	ref = db.reference("hoot/all")
-	foods = ref.get()
-
-	return render_template('hootForm.html', foods=foods)
-
-@app.route('/updateHoot', methods=['POST'])
-def updateHoot():
-	print("received hoot update")
-	if request.method == "POST":
-		outOfStock = request.form.getlist("foodItem")
-		allFoodsRef = db.reference("hoot/all")
-
-		for food in allFoodsRef.get().keys():
-			ref = db.reference("hoot/all/" + food)
-			if food not in outOfStock:
-				ref.set(False)
-				foodRef = db.reference('hoot/inStock/' + food)
-				foodRef.set(food)
-				foodRef = db.reference('hoot/outOfStock/' + food)
-				foodRef.delete()
-			else:
-				ref.set(True)
-				foodRef = db.reference('hoot/outOfStock/' + food)
-				foodRef.set(food)
-				foodRef = db.reference('hoot/inStock/' + food)
-				foodRef.delete()
-
-
-		return redirect(url_for('hostHoot'))
-
-@app.route('/')
-@app.route('/hootHotline')
-def hootHotline():
-	inStockRef = db.reference('hoot/inStock')
-	outOfStockRef = db.reference('hoot/outOfStock')
-
-	inStock = []
-	outOfStock = []
-
-	if inStockRef.get() is not None:
-		inStock = list(inStockRef.get().keys())
-
-	if outOfStockRef.get() is not None:
-		outOfStock = list(outOfStockRef.get().keys())
-
-	return render_template('hootHotline.html', inStock=inStock, outOfStock=outOfStock)
 
 
 ####################
@@ -292,32 +236,12 @@ def removeUser(number):
 
 	print("Removed " + number)
 
-def hootStockMessage():
-	ref = db.reference("hoot/outOfStock")
-	
-	if ref.get() is not None:
-		outOfStock = list(ref.get().keys())
-		foods = ""
-		for item in outOfStock:
-			foods += item + ", "
-		return "The following foods are OUT OF STOCK: " + foods[:-2] # To strip trailing comma
-	else:
-		return "All foods are in stock!"
-
-def isHoot(message):
-	return "hoot" in message.lower().strip()
-
-def addToHoot(number):
-	ref = db.reference("hootUsers/+" + str(number))
-	ref.set(str(number))
-
-
 
 ################
 # Put it all together
 ################
 
-# Sets up enviornment variables for secrets
+# Sets up environment variables for secrets
 def initEnviron():
 	load_dotenv(find_dotenv())
 	initTwilio()
