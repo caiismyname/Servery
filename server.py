@@ -1,76 +1,15 @@
-import urllib3
-from twilio.rest import Client
-from twilio.twiml.messaging_response import MessagingResponse
-import requests
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-from dotenv import load_dotenv, find_dotenv
 from flask import Flask, request, render_template, redirect, url_for
 import os
 
+from SubscriptionManager.py import SubscriptionManager
+from TextResponder.py import TextResponder
+from MessageParser.py import MessageParser
 
-serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
+messageParser = MessageParser()
+subscriptionManager = SubscriptionManager()
+TextResponder = TextResponder()
 
-################
-# Twilio
-################
-
-twilioPhoneNumber = "+17137144366"
-twilioClient = None
-
-def initTwilio():
-	global twilioClient
-	twilioClient = Client(os.environ.get("TWILIO-ACCOUNT-SID"), os.environ.get("TWILIO-ACCOUNT-TOKEN"))
-
-def sendMessage(recipient, message):
-	if recipient[:2] != "+1":
-		recipient = "+1" + recipient
-
-	try:
-		twilioClient.api.account.messages.create(
-		    to=recipient,
-		    from_=twilioPhoneNumber,
-		    body=message)
-
-		print(recipient, message)
-	except twilio.base.exceptions.TwilioRestException:
-		print("TwilioRestException occured")
-
-
-################
-# Firebase
-################
-
-def initFirebase():
-	# This is so stupid.
-	# Unadultered, the private_key gets ready out with "\\\n" instead of newlines.
-	# Putting the key in surrounded by quotes makes it "\n" (literal).
-		# Note that the surrounding quotes are only needed on my local machine, not on heroku.
-	# Read that, split, then concat actual newlines, to make it a valid private_key.
-
-	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
-	privateKey = ""
-	for portion in privateKeySplit:
-		privateKey += portion + "\n"
-
-	serviceAccountKey = {
-		'type': os.environ.get("FIREBASE-TYPE"),
-		# 'project_id': os.environ.get("FIREBASE-PROJECT-ID"), 
-		# 'private_key_id': os.environ.get("FIREBASE-PRIVATE-KEY-ID"),
-		'private_key': privateKey,
-		'client_email': os.environ.get("FIREBASE-CLIENT-EMAIL"), 
-		# 'client_id': os.environ.get("FIREBASE-CLIENT-ID"),
-		# 'auth_uri': os.environ.get("FIREBASE-AUTH-URI"),
-		'token_uri': os.environ.get("FIREBASE-TOKEN-URI"),
-		# 'auth_provider_x509_cert_url': os.environ.get("FIREBASE-AUTH-PROVIDER"),
-		# 'client_x509_cert_url': os.environ.get("FIREBASE-CLIENT-CERT-URL")
-	}
-
-	cred = credentials.Certificate(serviceAccountKey)
-	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
-
-# Defining Flask here b/c it's only used as an endpoint for Twilio requests
+# Flask is used as an endpoint for Twilio requests
 app = Flask(__name__)
 
 @app.route('/addUser', methods=['POST'])
@@ -144,110 +83,13 @@ def addUser():
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
 
+def serveRequests():
+	body = request.form['Body'].strip().lower()
+	number = request.form['From']
+	print("Body: ", body, "Number: ", number)
 
-####################
-# Helper Functions
-####################
-
-def parseServeryName(input):
-	input = input.strip().lower() 
-	
-	if 'west' in input:
-		return "West"
-	elif 'bel' in input or 'ble' in input:
-		return "Seibel"
-	elif 'north' in input:
-		return "North"
-	elif 'baker' in input:
-		return "Baker"
-	elif 'rich' in input or 'sid' in input:
-		return "SidRich"
-	elif 'south' in input:
-		return "South"
-	
-	return None
-
-def getUsersOfServery(servery):
-	ref = db.reference("serveries/" + servery)
-	print(ref.get().keys())
-	return ref.get().keys()
-
-def getMenu(servery):
-	ref = db.reference("menus/" + servery)
-	return ref.get()
-
-def getServeries(number):
-	ref = db.reference("users/+" + number)
-	if ref.get() is None:
-		latentRef = db.reference("latentUsers/+" + number)
-		if latentRef.get() is None:
-			return None
-		else:
-			return "latent"
-
-	return ref.get().keys()
-
-def addUserToServery(number, servery):
-	# Add to new servery
-	serveryRef = db.reference("serveries/" + servery + "/+" + number)
-	serveryRef.set(number)
-
-	# Update user entry
-	usersRef = db.reference("users/+" + number + "/" + servery)
-	usersRef.set(servery)
-
-	# If it's their first servery after going latent, need to remove from latent list
-	latentRef = db.reference("latentUsers/+" + number)
-	if latentRef.get() is not None:
-		latentRef.delete()
-
-	print("Added user " + str(number) + " to firebase")
-
-def addLatentUser(number):
-	userRef = db.reference("latentUsers/+" + number)
-	userRef.set(number)
-
-def removeUserFromServery(number, servery):
-	# Remove from servery
-	serveryRef = db.reference("serveries/" + servery + "/+" + number)
-	serveryRef.delete()
-
-	# Update user entry
-	usersRef = db.reference("users/+" + number + "/" + servery)
-	usersRef.delete()
-
-	# Check if they're going into latent user mode
-	oldRef = db.reference("users/+" + number)
-	if oldRef.get() is None:
-		addLatentUser(number)
-
-def removeUser(number):
-	serveriesSubscribedTo = getServeries(number)
-	if serveriesSubscribedTo == "latent":
-		latentRef = db.reference("latentUsers/+" + number)
-		latentRef.delete()
-	else:
-		for servery in serveriesSubscribedTo:
-			serveryRef = db.reference("serveries/" + servery + "/+" + number)
-			serveryRef.delete()
-
-		userRef = db.reference("users/+" + number)
-		userRef.delete()
-
-	print("Removed " + number)
+	messageType = messageParser.parse(body)
 
 
-################
-# Put it all together
-################
-
-# Sets up environment variables for secrets
-def initEnviron():
-	load_dotenv(find_dotenv())
-	initTwilio()
-	initFirebase()
-
-
-initEnviron()
 
 # app.run()
