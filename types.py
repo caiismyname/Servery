@@ -1,14 +1,14 @@
 from enum import Enum
 
-class SubOp(Enum):
+class OpType(Enum):
     ADD = "add"
     REMOVE = "remove"
-    NONE = "none"
+    QUERY = "query"
 
 class Meal(Enum):
     LUNCH = "lunch"
     DINNER = "dinner"
-    ALL = "all"
+    ALL = "lunch and dinner"
 
 class Serveries(Enum):
     SID = "SidRich"
@@ -18,3 +18,30 @@ class Serveries(Enum):
     SOUTH = "South"
     WEST = "West"
 
+class MessageType():
+    def __init__(self):
+        return
+
+class InstructionMsg(MessageType):
+    def __init__self(self):
+        super()
+        return
+
+class UnsubscribeMsg(MessageType):
+    def __init__self(self):
+        super()
+        return
+
+class QueryMsg(MessageType):
+    def __init__self(self, servery):
+        super()
+        self.servery = servery
+        return
+
+class SubOpMsg(MessageType):
+    def __init__self(self, opType, meal, servery):
+        super()
+        self.opType = opType
+        self.meal = meal
+        self.servery = servery
+        return

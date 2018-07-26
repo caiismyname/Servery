@@ -4,15 +4,43 @@ import os
 from SubscriptionManager.py import SubscriptionManager
 from TextResponder.py import TextResponder
 from MessageParser.py import MessageParser
+from types.py import MessageType, UnsubscribeMsg, InstructionMsg, SubOpMsg, OpType
 
 messageParser = MessageParser()
 subscriptionManager = SubscriptionManager()
-TextResponder = TextResponder()
+textResponder = TextResponder()
 
-# Flask is used as an endpoint for Twilio requests
+# Flask is used as an endpoint for requests
 app = Flask(__name__)
 
 @app.route('/addUser', methods=['POST'])
+def serveRequests():
+	body = request.form['Body'].strip().lower()
+	number = request.form['From']
+	print("Body: ", body, "Number: ", number)
+
+	msg = messageParser.parse(body)
+	if (isinstance(msg, SubOpMsg)):
+		if (msg.opType == OpType.QUERY):
+			textResponder.sendMenuForServery(number, msg.servery)
+
+		elif (msg.opType == OpType.ADD):
+			subscriptionManager.addToServery(number, msg.servery, msg.meal)
+
+		elif (msg.opType == OpType.REMOVE):
+			subscriptionManager.removeFromServery(number, msg.servery, msg.meal)
+
+	elif (isinstance(msg, UnsubscribeMsg)):
+		subscriptionManager.unsubscribeFromService(number)
+		textResponder.sendUnsubscribeConfirmation(number)
+
+	elif (isinstance(msg, InstructionMsg)):
+		textResponder.sendInstructions(number)
+
+	else:
+		pass
+
+# Old method
 def addUser():
 	resp = MessagingResponse()
 	body = request.form['Body'].strip().lower()
@@ -82,14 +110,5 @@ def addUser():
 		return str(resp), 200
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
-
-def serveRequests():
-	body = request.form['Body'].strip().lower()
-	number = request.form['From']
-	print("Body: ", body, "Number: ", number)
-
-	messageType = messageParser.parse(body)
-
-
 
 # app.run()

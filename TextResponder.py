@@ -4,6 +4,7 @@ from firebase_admin import credentials
 from firebase_admin import db
 from dotenv import load_dotenv, find_dotenv
 import os
+import json
 
 class TextResponder:
 	def __init__(self):
@@ -11,6 +12,9 @@ class TextResponder:
         self.__initTwilio()
         self.resp = MessagingResponse()
         self.__initFirebase()
+        responseJson = open("responses.json", "r")
+        self.responses = json.loads(responseJson.read())
+        responseJson.close()
 
     def __initTwilio(self):
         self.twilioClient = Client(os.environ.get("TWILIO-ACCOUNT-SID"), os.environ.get("TWILIO-ACCOUNT-TOKEN"))
@@ -18,10 +22,6 @@ class TextResponder:
     def __initFirebase(self):
         load_dotenv(find_dotenv())
 
-        # Unadultered, the private_key gets ready out with "\\\n" instead of newlines.
-        # Putting the key in surrounded by quotes makes it "\n" (literal).
-            # Note that the surrounding quotes are only needed on my local machine, not on heroku.
-        # Read that, split, then concat actual newlines, to make it a valid private_key.
         privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
         privateKey = ""
         for portion in privateKeySplit:
@@ -58,13 +58,33 @@ class TextResponder:
             print("TwilioRestException occured")
 
     def __getMenuForServery(self, servery):
+        return db.reference("serveries/{}".format(servery)).get()
+
+    def __getServeriesForUser(self, user):
+        all = db.reference("users/{}".format(user)).get()
+        lunch = all["lunch"].keys()
+        dinner = all["dinner"].keys()
+        distinctServeries = set(lunch + dinner)
+        
+        formattedString = ""
+        for servery in distinctServeries:
+            formattedString += "{}, ".format(servery)
+        
+        formattedString = formattedString[:-1] # Strip trailing comma
+        return formattedString
 
     def sendMenuForServery(self, user, servery):
+        sendMessage(user,self. __getMenuForServery(servery))
 
     def sendInstructions(self, user):
+        sendMessage(user, self.responses["instructions"].format(self.__getServeriesForUser(user)))
 
     def sendAddServeryConfirmation(self, user, servery, meal):
+        sendMessage(user, self.responses["add-servery-confirmation"].format(servery, meal))
 
-    def sendRemoveServeryConfirmation(self, user, servery, meal):    
+    def sendRemoveServeryConfirmation(self, user, servery, meal):
+        sendMessage(user, self.responses["add-servery-confirmation"].format(servery, meal))
 
     def sendUnsubscribeConfirmation(self, user):
+        sendMessage(user, self.responses["unsubscribe-confirmation"])
+

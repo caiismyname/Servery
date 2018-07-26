@@ -16,42 +16,71 @@ northWeekendServery = "North"
 southWeekendServery = "Seibel"
 
 ################
-# Twilio
+# Plivo
 ################
 
-twilioPhoneNumber = "+17137144366"
-twilioClient = None
-
-def initTwilio():
-	global twilioClient
-	twilioClient = Client(os.environ.get("TWILIO-ACCOUNT-SID"), os.environ.get("TWILIO-ACCOUNT-TOKEN"))
+phoneNumber = "+17137144366"
 
 def sendMessage(recipient, message):
-	if recipient[:2] != "+1":
-		recipient = "+1" + recipient
-
-	try:
-		twilioClient.api.account.messages.create(
-		    to=recipient,
-		    from_=twilioPhoneNumber,
-		    body=message)
-
-		print(recipient, message)
-	except twilio.base.exceptions.TwilioRestException:
-		print("TwilioRestException occured")
-
+	pass
 
 ################
-# Firebase
+# Helpers
 ################
 
+def getUsersOfServery(servery):
+	ref = db.reference("serveries/{}".format(servery))
+	print(ref.get().keys())
+	return ref.get().keys()
+
+# allUsers should be dict with phone number --> list of serveries mapping
+def splitUsersNorthSouth():
+	allUsers = db.reference("users").get()
+	northUsers = []
+	southUsers = []
+
+	for user in allUsers:
+		for servery in northServeries:
+			if servery in allUsers[user]:
+				northUsers.append(user)
+				break
+		
+		for servery in southServeries:
+			if servery in allUsers[user]:
+				southUsers.append(user)
+				break
+	
+	return {"north": northUsers, "south": southUsers}
+
+def splitInTenAndSend(recipients, message):
+	groups = []
+	counter = 0
+	tempList = []
+	for r in recipients:
+		if (r == "foo"):
+			continue
+
+		tempList.append(r)
+		counter += 1
+
+		if (counter == 9):
+			groups.append(tempList)
+			tempList = []
+			counter = 0
+	
+	# Put the last group into the overall group list
+	if (len(tempList) > 0):
+		groups.append(tempList)
+
+	for group in groups:
+		sendMessage(group, message)
+
+################
+# Put it all together
+################
+
+# Sets up environment variables for secrets
 def initFirebase():
-	# This is so stupid.
-	# Unadultered, the private_key gets ready out with "\\\n" instead of newlines.
-	# Putting the key in surrounded by quotes makes it "\n" (literal).
-		# Note that the surrounding quotes are only needed on my local machine, not on heroku.
-	# Read that, split, then concat actual newlines, to make it a valid private_key.
-
 	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
 	privateKey = ""
 	for portion in privateKeySplit:
@@ -73,75 +102,28 @@ def initFirebase():
 	cred = credentials.Certificate(serviceAccountKey)
 	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
-def getUsersOfServery(servery):
-	ref = db.reference("serveries/" + servery)
-	print(ref.get().keys())
-	return ref.get().keys()
-
-def getMenu(servery):
-	ref = db.reference("menus/" + servery)
-	return ref.get()
-
-def getAllUsers():
-	ref = db.reference("users")
-	return ref.get()
-
-# 'user' should be a dictionary of the serveries a user is subscribed to
-# where the key and value are the same.
-def isNorth(user):
-	for servery in northServeries:
-		if servery in user:
-			return True
-
-	return False
-
-# 'user' should be a dictionary of the serveries a user is subscribed to
-# where the key and value are the same.
-def isSouth(user):
-	for servery in southServeries:
-		if servery in user:
-			return True
-
-	return False
-
-################
-# Put it all together
-################
-
-# Sets up enviornment variables for secrets
 def initEnviron():
 	load_dotenv(find_dotenv())
-	initTwilio()
 	initFirebase()
 
 def updateUsers():
 	weekdays = [1,2,3,4,5]
 	today = date.today()
 	isWeekday = today.isoweekday() in weekdays
-
-	menus = {}
-	for servery in serveries:
-		menus[servery] = getMenu(servery)
+	menus = db.reference("menus").get()
 
 	# On weekdays, go through serveries and send menus for everyone subscribed to a servery
 	if isWeekday:
 		for servery in serveries:
 			menu = menus[servery]
 			users = getUsersOfServery(servery)
-
-			for user in users:
-				if user != "foo":
-					sendMessage(user, str(menu))
-	# On weekends, iterate through users and send menu for north if subscribed to 
-	# a north servery, seibel if south
+			splitInTenAndSend(users, menu)
+	# On weekends, iterate through users and send menu for North if subscribed to 
+	# a north servery, Seibel if south
 	else:
-		allUsers = getAllUsers()
-		for user in allUsers:
-			if isNorth(allUsers[user]):
-	 			sendMessage(user, str(menus[northWeekendServery]))
-
-			if isSouth(allUsers[user]):
-				sendMessage(user, str(menus[southWeekendServery]))
+		northSouthSplit = splitUsersNorthSouth()
+		splitInTenAndSend(northSouthSplit["north"], menus["North"])
+		splitInTenAndSend(northSouthSplit["south"], menus["Siebel"])
 
 
 
