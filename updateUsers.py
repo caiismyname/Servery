@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import date
 from dotenv import load_dotenv, find_dotenv
 
@@ -18,18 +19,22 @@ southWeekendServery = "Seibel"
 plivoPhoneNumber = "7137144366"
 initFirebase()
 adManager = AdManager(db)
+testMode = False
 
 ################
 # Plivo
 ################
 
 def sendBulkMessage(recipients, message):
-	client = plivo.RestClient()
-	response = client.messages.create(
-   		src=plivoPhoneNumber,
-    	dst=recipients,
-    	text=message)
-	print(response)
+	if (not testMode):
+		client = plivo.RestClient()
+		response = client.messages.create(
+			src=plivoPhoneNumber,
+			dst=recipients,
+			text=message)
+		print(response)
+	else:
+		print("Sending: [{}] to [{}]".format(message, recipients))
 
 ################
 # Helpers
@@ -130,5 +135,13 @@ def updateUsers():
 		splitAndSend(northSouthSplit["north"], "{} Sponsor: {}".format(menus["North"], adManager.getMenuUpdateAd()))
 		splitAndSend(northSouthSplit["south"], "{} Sponsor: {}".format(menus["Seibel"], adManager.getMenuUpdateAd()))
 
-updateUsers()
 
+
+if (len(sys.argv) > 1):
+	if ("-t" in sys.argv):
+		testMode = True
+
+if (os.environ.get("NOT-HEROKU") == "TRUE"):
+	testMode = True
+
+updateUsers()

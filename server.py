@@ -161,4 +161,6 @@ def addUser():
 
 if (len(sys.argv) > 1):
 	if ("-r" in sys.argv or "-run" in sys.argv):
+		# Specifying -r means it's not Heroku, so by default we want to use testMode
+		textResponder.setTestMode(True)
 		app.run()

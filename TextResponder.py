@@ -8,7 +8,9 @@ class TextResponder:
     def __init__(self, db):
         self.plivoPhoneNumber = "+17137144366"
         self.__initPlivo()
+
         self.db = db
+
         responseJson = open("responses.json", "r")
         self.responses = json.loads(responseJson.read())
         responseJson.close()
@@ -17,11 +19,13 @@ class TextResponder:
         self.client = plivo.RestClient()
 
     def __sendMessage(self, recipient, message):
-        self.client.messages.create(
-            src=self.plivoPhoneNumber,
-            dst=recipient,
-            text=message)
-        print("Fake Sending {} to {}".format(message, recipient))
+        if (not self.testMode):
+            self.client.messages.create(
+                src=self.plivoPhoneNumber,
+                dst=recipient,
+                text=message)
+        else:
+            print("Sending [{}] to [{}]".format(message, recipient))
 
     def __getMenuForServery(self, servery):
         return self.db.reference("menus/{}".format(servery.value)).get()
@@ -54,3 +58,5 @@ class TextResponder:
     def sendUnsubscribeConfirmation(self, user):
         self.__sendMessage(user, self.responses["unsubscribe-confirmation"])
 
+    def setTestMode(self, testMode):
+        self.testMode = testMode
