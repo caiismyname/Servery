@@ -19,7 +19,7 @@ class TextResponder:
         self.client = plivo.RestClient()
 
     def __sendMessage(self, recipient, message):
-        if (not self.testMode):
+        if not self.testMode:
             self.client.messages.create(
                 src=self.plivoPhoneNumber,
                 dst=recipient,

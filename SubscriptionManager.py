@@ -9,7 +9,7 @@ class SubscriptionManager:
         self.db = db
         
     def unsubscribeFromService(self, user):
-        if (self.db.reference("users/{}".format(user)).get() is None):
+        if self.db.reference("users/{}".format(user)).get() is None:
             self.__removeLatentUser(user)
         else:
             lunchServeries = []
@@ -37,20 +37,20 @@ class SubscriptionManager:
     # a new user into the system
     def addToServery(self, user, servery, meal):
         # Add to new servery
-        if (meal == Meal.LUNCH or meal == Meal.ALL):
+        if meal == Meal.LUNCH or meal == Meal.ALL:
             serveryRef = self.db.reference("serveries/{}/lunch/{}".format(servery.value, user))
             serveryRef.set(user)
 
-        if (meal == Meal.DINNER or meal == Meal.ALL):
+        if meal == Meal.DINNER or meal == Meal.ALL:
             serveryRef = self.db.reference("serveries/{}/dinner/{}".format(servery.value, user))
             serveryRef.set(user)
 
         # Update user entry
-        if (meal == Meal.LUNCH or meal == Meal.ALL):
+        if meal == Meal.LUNCH or meal == Meal.ALL:
             userRef = self.db.reference("users/{}/lunch/{}/".format(user, servery.value))
             userRef.set(servery)
 
-        if (meal == Meal.DINNER or meal == Meal.ALL):
+        if meal == Meal.DINNER or meal == Meal.ALL:
             userRef = self.db.reference("users/{}/dinner/{}/".format(user, servery.value))
             userRef.set(servery)
 
@@ -59,20 +59,20 @@ class SubscriptionManager:
 
     def removeFromServery(self, user, servery, meal):
         # Remove from servery
-        if (meal == Meal.LUNCH or meal == Meal.ALL):
+        if meal == Meal.LUNCH or meal == Meal.ALL:
             serveryRef = self.db.reference("serveries/{}/lunch/{}".format(servery.value, user))
             serveryRef.delete()
 
-        if (meal == Meal.DINNER or meal == Meal.ALL):
+        if meal == Meal.DINNER or meal == Meal.ALL:
             serveryRef = self.db.reference("serveries/{}/dinner/{}".format(servery.value, user))
             serveryRef.delete()
 
         # Update user entry
-        if (meal == Meal.LUNCH or meal == Meal.ALL):
+        if meal == Meal.LUNCH or meal == Meal.ALL:
             userRef = self.db.reference("users/{}/lunch/{}/".format(user, servery.value))
             userRef.delete()
 
-        if (meal == Meal.DINNER or meal == Meal.ALL):
+        if meal == Meal.DINNER or meal == Meal.ALL:
             userRef = self.db.reference("users/{}/dinner/{}/".format(user, servery.value))
             userRef.delete()
 

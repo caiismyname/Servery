@@ -10,17 +10,17 @@ class MessageParser:
         return
 
     def parse(self, message):
-        if (self.__containsServeryName(message)):
+        if self.__containsServeryName(message):
             opType = self.__whichOpType(message)
             meal = self.__whichMeal(message)
             servery = self.__whichServery(message)
             
             return SubOpMsg(opType, meal, servery)
 
-        elif (self.__isInstructionsRequest(message)):
+        elif self.__isInstructionsRequest(message):
             return InstructionMsg()
             
-        elif (self.__isUnsubscribeRequest(message)):
+        elif self.__isUnsubscribeRequest(message):
             return UnsubscribeMsg()
 
         return None

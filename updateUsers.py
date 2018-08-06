@@ -69,19 +69,19 @@ def splitAndSend(recipients, message):
 	counter = 0
 	tempList = []
 	for r in recipients:
-		if (r == "foo"):
+		if r == "foo":
 			continue
 
 		tempList.append(r)
 		counter += 1
 
-		if (counter == 49):
+		if counter == 49:
 			groups.append(tempList)
 			tempList = []
 			counter = 0
 	
 	# Put the last group into the overall group list
-	if (len(tempList) > 0):
+	if len(tempList) > 0:
 		groups.append(tempList)
 
 	for group in groups:

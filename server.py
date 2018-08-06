@@ -54,32 +54,32 @@ def serveRequests():
 	print("Body: ", body, "Number: ", number)
 
 	msg = messageParser.parse(body)
-	if (isinstance(msg, SubOpMsg)):
-		if (msg.opType == OpType.QUERY):
+	if isinstance(msg, SubOpMsg):
+		if msg.opType == OpType.QUERY:
 			# Must distinguish between query and first time messager
-			if (subscriptionManager.isUserSubscribed(number)):
+			if subscriptionManager.isUserSubscribed(number):
 				print("{}: Queried {}".format(number, msg.servery))
 				textResponder.sendMenuForServery(number, msg.servery)
 			else:
 				print("{}: First time user, subscribing to {}".format(number, msg.servery))
 				subscriptionManager.addToServery(number, msg.servery, msg.meal)
 
-		elif (msg.opType == OpType.ADD):
+		elif msg.opType == OpType.ADD:
 			print("{}: Added {}".format(number, msg.servery))
 			subscriptionManager.addToServery(number, msg.servery, msg.meal)
 			textResponder.sendAddServeryConfirmation(number, msg.servery, msg.meal)
 
-		elif (msg.opType == OpType.REMOVE):
+		elif msg.opType == OpType.REMOVE:
 			print("{}: Removed {}".format(number, msg.servery))
 			subscriptionManager.removeFromServery(number, msg.servery, msg.meal)
 			textResponder.sendRemoveServeryConfirmation(number, msg.servery, msg.meal)
 
-	elif (isinstance(msg, UnsubscribeMsg)):
+	elif isinstance(msg, UnsubscribeMsg):
 		print("{}: Unsubscribed".format(number))
 		subscriptionManager.unsubscribeFromService(number)
 		textResponder.sendUnsubscribeConfirmation(number)
 
-	elif (isinstance(msg, InstructionMsg)):
+	elif isinstance(msg, InstructionMsg):
 		print("{}: Instructions".format(number))
 		textResponder.sendInstructions(number)
 
@@ -159,8 +159,8 @@ def addUser():
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
 
-if (len(sys.argv) > 1):
-	if ("-r" in sys.argv or "-run" in sys.argv):
+if len(sys.argv) > 1:
+	if "-r" in sys.argv or "-run" in sys.argv:
 		# Specifying -r means it's not Heroku, so by default we want to use testMode
 		textResponder.setTestMode(True)
 		app.run()
