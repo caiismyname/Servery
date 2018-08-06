@@ -2,7 +2,8 @@ import os
 from datetime import date
 from dotenv import load_dotenv, find_dotenv
 
-import urllib3
+from AdManager import AdManager
+
 import requests
 import firebase_admin
 from firebase_admin import credentials, db
@@ -14,13 +15,13 @@ southServeries = ["Seibel", "SidRich", "South", "Baker"]
 northWeekendServery = "North"
 southWeekendServery = "Seibel"
 
-plivoPhoneNumber = "+17137144366"
+plivoPhoneNumber = "7137144366"
+initFirebase()
+adManager = AdManager(db)
 
 ################
 # Plivo
 ################
-
-phoneNumber = "+17137144366"
 
 def sendBulkMessage(recipients, message):
 	client = plivo.RestClient()
@@ -36,7 +37,6 @@ def sendBulkMessage(recipients, message):
 
 def getUsersOfServery(servery):
 	ref = db.reference("serveries/{}".format(servery))
-	print(ref.get().keys())
 	return ref.get().keys()
 
 # For use on weekends, to send only one menu instead of 
@@ -82,9 +82,9 @@ def splitAndSend(recipients, message):
 	for group in groups:
 		sendBulkMessage(group, message)
 
-################
+######################
 # Put it all together
-################
+######################
 
 # Sets up environment variables for secrets
 def initFirebase():
@@ -120,17 +120,15 @@ def updateUsers():
 	# On weekdays, go through serveries and send menus for everyone subscribed to a servery
 	if isWeekday:
 		for servery in serveries:
-			menu = menus[servery]
+			message = "{} Sponsor: {}".format(menus[servery], adManager.getMenuUpdateAd())
 			users = getUsersOfServery(servery)
-			splitAndSend(users, menu)
+			splitAndSend(users, message)
 	# On weekends, iterate through users and send menu for North if subscribed to 
 	# a north servery, Seibel if south
 	else:
 		northSouthSplit = splitUsersNorthSouth()
-		splitAndSend(northSouthSplit["north"], menus["North"])
-		splitAndSend(northSouthSplit["south"], menus["Siebel"])
+		splitAndSend(northSouthSplit["north"], "{} Sponsor: {}".format(menus["North"], adManager.getMenuUpdateAd()))
+		splitAndSend(northSouthSplit["south"], "{} Sponsor: {}".format(menus["Seibel"], adManager.getMenuUpdateAd()))
 
-
-initFirebase()
 updateUsers()
 

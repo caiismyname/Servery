@@ -1,8 +1,7 @@
 import urllib3
 import requests
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
+from firebase_admin import credentials, db
 from dotenv import load_dotenv, find_dotenv
 import os
 
