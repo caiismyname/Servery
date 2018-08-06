@@ -23,23 +23,23 @@ class MessageType():
         return
 
 class InstructionMsg(MessageType):
-    def __init__self(self):
+    def __init__(self):
         super()
         return
 
 class UnsubscribeMsg(MessageType):
-    def __init__self(self):
+    def __init__(self):
         super()
         return
 
 class QueryMsg(MessageType):
-    def __init__self(self, servery):
+    def __init__(self, servery):
         super()
         self.servery = servery
         return
 
 class SubOpMsg(MessageType):
-    def __init__self(self, opType, meal, servery):
+    def __init__(self, opType, meal, servery):
         super()
         self.opType = opType
         self.meal = meal

@@ -1,6 +1,6 @@
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
-from types.py import SubOpMsg, Meal, Servery, OpType
+from Types import SubOpMsg, InstructionMsg, UnsubscribeMsg, OpType, Meal, Serveries
+
+from fuzzywuzzy import fuzz, process
 
 class MessageParser:
     def __init__(self):
@@ -29,28 +29,28 @@ class MessageParser:
         choice, confidence = process.extractOne(message, self.allOptions)
         if confidence >= 80 or (choice == "seibel" and confidence >= 65):
             return True
-        else
+        else:
             return False
 
     def __isInstructionsRequest(self, message):
         helpCommands = ["help", "instructions", "what do", "how", "ayuda"]
         if process.extractOne(message, helpCommands)[1] >= 80:
             return True
-        else
+        else:
             return False
 
     def __isUnsubscribeRequest(self, message):
         unsubscribeCommands = ["unsubscribe", "leave", "stop", "go away", "fuck you", "end"]
         if process.extractOne(message, unsubscribeCommands)[1] >= 80:
             return True
-        else
+        else:
             return False
 
     def __whichOpType(self, message):
         opTypes = ["add", "remove", "delete", "join", "follow"]
         op, confidence = process.extractOne(message, opTypes)
 
-        if confidence < self.confidenceThreshold:
+        if confidence < 70:
             return OpType.QUERY
         elif op == "and" or op == "join" or op == "follow":
             return OpType.ADD
@@ -59,17 +59,17 @@ class MessageParser:
 
     def __whichMeal(self, message):
         meals = ["lunch", "dinner", "cena", "almuerzo"]
-        op, confidence = process.extractOne(message, subOps)
+        op, confidence = process.extractOne(message, meals)
 
         if confidence < 70:
-            return Meals.ALL
+            return Meal.ALL
 
         if op == "lunch" or op == "almuerzo":
-            return Meals.LUNCH
+            return Meal.LUNCH
         else:
-            return Meals.DINNER
+            return Meal.DINNER
 
-    def __whichServery(self, messsage):
+    def __whichServery(self, message):
         choice, confidence = process.extractOne(message, self.allOptions)
 
         if choice == "west" or choice == "mcmurtry" or choice == "duncan":
@@ -80,7 +80,7 @@ class MessageParser:
             return Serveries.NORTH            
         elif choice == "seibel" or choice == "lovett" or choice == "will rice" or choice == "wrc":
             return Serveries.SEIBEL
-        elif choice == "baker"
+        elif choice == "baker":
             return Serveries.BAKER
         elif choice == "sid" or choice == "rich" or choice == "richardson" or choice == "sid richardson" or choice == "sid rich" or choice == "sidrich":
             return Serveries.SID

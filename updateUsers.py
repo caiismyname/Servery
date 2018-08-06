@@ -1,13 +1,12 @@
-import urllib3
-from twilio.rest import Client
-import twilio
-import requests
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import db
-from dotenv import load_dotenv, find_dotenv
 import os
 from datetime import date
+from dotenv import load_dotenv, find_dotenv
+
+import urllib3
+import requests
+import firebase_admin
+from firebase_admin import credentials, db
+import plivo
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
 northServeries = ["North", "West"]
@@ -15,14 +14,21 @@ southServeries = ["Seibel", "SidRich", "South", "Baker"]
 northWeekendServery = "North"
 southWeekendServery = "Seibel"
 
+plivoPhoneNumber = "+17137144366"
+
 ################
 # Plivo
 ################
 
 phoneNumber = "+17137144366"
 
-def sendMessage(recipient, message):
-	pass
+def sendBulkMessage(recipients, message):
+	client = plivo.RestClient()
+	response = client.messages.create(
+   		src=plivoPhoneNumber,
+    	dst=recipients,
+    	text=message)
+	print(response)
 
 ################
 # Helpers
@@ -33,7 +39,8 @@ def getUsersOfServery(servery):
 	print(ref.get().keys())
 	return ref.get().keys()
 
-# allUsers should be dict with phone number --> list of serveries mapping
+# For use on weekends, to send only one menu instead of 
+# the subscribed serveries
 def splitUsersNorthSouth():
 	allUsers = db.reference("users").get()
 	northUsers = []
@@ -52,7 +59,7 @@ def splitUsersNorthSouth():
 	
 	return {"north": northUsers, "south": southUsers}
 
-def splitInTenAndSend(recipients, message):
+def splitAndSend(recipients, message):
 	groups = []
 	counter = 0
 	tempList = []
@@ -63,7 +70,7 @@ def splitInTenAndSend(recipients, message):
 		tempList.append(r)
 		counter += 1
 
-		if (counter == 9):
+		if (counter == 49):
 			groups.append(tempList)
 			tempList = []
 			counter = 0
@@ -73,7 +80,7 @@ def splitInTenAndSend(recipients, message):
 		groups.append(tempList)
 
 	for group in groups:
-		sendMessage(group, message)
+		sendBulkMessage(group, message)
 
 ################
 # Put it all together
@@ -81,6 +88,8 @@ def splitInTenAndSend(recipients, message):
 
 # Sets up environment variables for secrets
 def initFirebase():
+	load_dotenv(find_dotenv())
+
 	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
 	privateKey = ""
 	for portion in privateKeySplit:
@@ -102,10 +111,6 @@ def initFirebase():
 	cred = credentials.Certificate(serviceAccountKey)
 	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
-def initEnviron():
-	load_dotenv(find_dotenv())
-	initFirebase()
-
 def updateUsers():
 	weekdays = [1,2,3,4,5]
 	today = date.today()
@@ -117,16 +122,15 @@ def updateUsers():
 		for servery in serveries:
 			menu = menus[servery]
 			users = getUsersOfServery(servery)
-			splitInTenAndSend(users, menu)
+			splitAndSend(users, menu)
 	# On weekends, iterate through users and send menu for North if subscribed to 
 	# a north servery, Seibel if south
 	else:
 		northSouthSplit = splitUsersNorthSouth()
-		splitInTenAndSend(northSouthSplit["north"], menus["North"])
-		splitInTenAndSend(northSouthSplit["south"], menus["Siebel"])
+		splitAndSend(northSouthSplit["north"], menus["North"])
+		splitAndSend(northSouthSplit["south"], menus["Siebel"])
 
 
-
-initEnviron()
+initFirebase()
 updateUsers()
 

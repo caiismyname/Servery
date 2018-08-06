@@ -1,44 +1,92 @@
-from flask import Flask, request, render_template, redirect, url_for
 import os
+import sys
 
-from SubscriptionManager.py import SubscriptionManager
-from TextResponder.py import TextResponder
-from MessageParser.py import MessageParser
-from types.py import MessageType, UnsubscribeMsg, InstructionMsg, SubOpMsg, OpType
+from Types import SubOpMsg, OpType, UnsubscribeMsg, InstructionMsg
+from SubscriptionManager import SubscriptionManager
+from TextResponder import TextResponder
+from MessageParser import MessageParser
 
+from firebase_admin import credentials, db
+import firebase_admin
+from dotenv import load_dotenv, find_dotenv
+from flask import Flask, request, render_template, redirect, url_for
+
+def __initFirebase():
+	load_dotenv(find_dotenv())
+
+	# Unadultered, the private_key gets ready out with "\\\n" instead of newlines.
+	# Putting the key in surrounded by quotes makes it "\n" (literal).
+		# Note that the surrounding quotes are only needed on my local machine, not on heroku.
+	# Read that, split, then concat actual newlines, to make it a valid private_key.
+	privateKeySplit = os.environ.get("FIREBASE-PRIVATE-KEY").split("\\n")
+	privateKey = ""
+	for portion in privateKeySplit:
+		privateKey += portion + "\n"
+
+	serviceAccountKey = {
+		'type': os.environ.get("FIREBASE-TYPE"),
+		# 'project_id': os.environ.get("FIREBASE-PROJECT-ID"), 
+		# 'private_key_id': os.environ.get("FIREBASE-PRIVATE-KEY-ID"),
+		'private_key': privateKey,
+		'client_email': os.environ.get("FIREBASE-CLIENT-EMAIL"), 
+		# 'client_id': os.environ.get("FIREBASE-CLIENT-ID"),
+		# 'auth_uri': os.environ.get("FIREBASE-AUTH-URI"),
+		'token_uri': os.environ.get("FIREBASE-TOKEN-URI"),
+		# 'auth_provider_x509_cert_url': os.environ.get("FIREBASE-AUTH-PROVIDER"),
+		# 'client_x509_cert_url': os.environ.get("FIREBASE-CLIENT-CERT-URL")
+	}
+
+	cred = credentials.Certificate(serviceAccountKey)
+	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
+
+__initFirebase()
 messageParser = MessageParser()
-subscriptionManager = SubscriptionManager()
-textResponder = TextResponder()
+subscriptionManager = SubscriptionManager(db)
+textResponder = TextResponder(db)
 
 # Flask is used as an endpoint for requests
 app = Flask(__name__)
 
-@app.route('/addUser', methods=['POST'])
+@app.route('/processMessage', methods=['POST'])
 def serveRequests():
-	body = request.form['Body'].strip().lower()
+	body = request.form['Text'].strip().lower()
 	number = request.form['From']
 	print("Body: ", body, "Number: ", number)
 
 	msg = messageParser.parse(body)
 	if (isinstance(msg, SubOpMsg)):
 		if (msg.opType == OpType.QUERY):
-			textResponder.sendMenuForServery(number, msg.servery)
+			# Must distinguish between query and first time messager
+			if (subscriptionManager.isUserSubscribed(number)):
+				print("{}: Queried {}".format(number, msg.servery))
+				textResponder.sendMenuForServery(number, msg.servery)
+			else:
+				print("{}: First time user, subscribing to {}".format(number, msg.servery))
+				subscriptionManager.addToServery(number, msg.servery, msg.meal)
 
 		elif (msg.opType == OpType.ADD):
+			print("{}: Added {}".format(number, msg.servery))
 			subscriptionManager.addToServery(number, msg.servery, msg.meal)
+			textResponder.sendAddServeryConfirmation(number, msg.servery, msg.meal)
 
 		elif (msg.opType == OpType.REMOVE):
+			print("{}: Removed {}".format(number, msg.servery))
 			subscriptionManager.removeFromServery(number, msg.servery, msg.meal)
+			textResponder.sendRemoveServeryConfirmation(number, msg.servery, msg.meal)
 
 	elif (isinstance(msg, UnsubscribeMsg)):
+		print("{}: Unsubscribed".format(number))
 		subscriptionManager.unsubscribeFromService(number)
 		textResponder.sendUnsubscribeConfirmation(number)
 
 	elif (isinstance(msg, InstructionMsg)):
+		print("{}: Instructions".format(number))
 		textResponder.sendInstructions(number)
 
 	else:
 		pass
+	
+	return 'DONE'
 
 # Old method
 def addUser():
@@ -111,4 +159,6 @@ def addUser():
 	except twilio.base.exceptions.TwilioRestException:
 		print("TwilioRestException occured.")
 
-# app.run()
+if (len(sys.argv) > 1):
+	if ("-r" in sys.argv or "-run" in sys.argv):
+		app.run()
