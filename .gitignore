@@ -1,0 +1,5 @@
+.DS_Store
+non-code
+keys-passwords
+.env
+__pycache__/
