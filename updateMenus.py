@@ -1,43 +1,14 @@
+import os
+from dotenv import load_dotenv, find_dotenv
+
 import urllib3
 import requests
 import firebase_admin
 from firebase_admin import credentials, db
-from dotenv import load_dotenv, find_dotenv
-import os
-
+from fuzzywuzzy import fuzz, process
 
 serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
-
-class Servery:
-	def __init__(self, name):
-		self.name = name
-		self.menuItems = []
-
-	def setHTMLMenu(self, HTMLMenu):
-		self.HTMLMenu = HTMLMenu
-		self.parseMenuItems(self.HTMLMenu)
-
-	def parseMenuItems(self, menu):
-		start = 0
-		while True:
-			start = menu.find("menu-item\">", start)
-			if start == -1: # No more menu items
-				break
-			currentPosition = start + 11 # +11 to offset the "menu-item"> part
-			# Read the menu item, until the closing </div> tag
-			entry = menu[currentPosition]
-			while menu[currentPosition + 1] != "<":
-				currentPosition += 1
-				entry += menu[currentPosition]
-
-			self.menuItems.append(entry)
-			start = currentPosition
-
-	def getMenuItems(self):
-		return self.menuItems
-
-	def __str__(self):
-		return str(self.name) + ": " + str(self.menuItems)[1:-1].replace("'", "")
+foundSpecials = {}
 
 ################
 # Firebase
@@ -75,6 +46,13 @@ def storeMenu(servery, menu):
 	ref = db.reference("menus/" + servery)
 	ref.set(menu)
 
+def storeSpecials():
+	for special in targetSpecials
+		if special in foundSpecials:
+			db.reference("specials/{}".format(special)).set(foundSpecials[special])
+		else:
+			# Must clear out previously found specials
+			db.reference("specials/{}".format(special)).set("")
 ################
 # Web scraping
 ################
@@ -91,26 +69,50 @@ def getWebsite():
 
 	return site
 
+def parseMenuItems(self, menu, servery):
+	menuItems = []
+	start = 0
+	while True:
+		start = menu.find("menu-item\">", start)
+		if start == -1: # No more menu items
+			break
+		currentPosition = start + 11 # +11 to offset the "menu-item"> part
+		# Read the menu item, until the closing </div> tag
+		entry = menu[currentPosition]
+		while menu[currentPosition + 1] != "<":
+			currentPosition += 1
+			entry += menu[currentPosition]
+
+		menuItems.append(entry)
+		compareAndSaveSpecial(entry, servery)
+		start = currentPosition
+
+	return menuItems
+
+def stringifyMenu(serveryName, menuItems):
+	return str(serveryName) + ": " + str(menuItems)[1:-1].replace("'", "")
+
 def getMenusFromSite(site):
 	menuMap = {}
 
 	# Find inidividual menus
 	for s in serveries:
-		servery = Servery(s)
-
 		startIndex = site.find("<div class=\"servery-title\" id=\"" + s)
 		endIndex = site.find("<div class=\"servery-title\"", startIndex + 1)
-		servery.setHTMLMenu(site[startIndex:endIndex])
-
-		menuMap[s] = servery
-		print(servery)
+		
+		menuMap[s] = parseMenu(site[startIndex:endIndex], s)
+		print(stringifyMenu(menuMap[s]))
 
 	return menuMap
 
+def compareAndSaveSpecial(foodItem, servery):
+	found, confidence = process.extractOne(foodItem, targetSpecials)
+	if confidence > 80:
+		foundSpecials[found] = servery
 
-################
+######################
 # Put it all together
-################
+######################
 
 # Sets up enviornment variables for secrets
 def initEnviron():
@@ -118,12 +120,14 @@ def initEnviron():
 	initFirebase()
 
 def updateMenus():
-	initEnviron()
 	menuMap = getMenusFromSite(getWebsite())
 
 	for servery in serveries:
-		menu = menuMap[servery]
-		storeMenu(servery, str(menu))
+		storeMenu(servery, stringifyMenu(menuMap[servery]))
 
+	storeSpecials()
+
+initEnviron()
+targetSpecials = db.reference("specials").get().keys()
 updateMenus()
 
