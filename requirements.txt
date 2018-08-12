@@ -8,3 +8,4 @@ Flask==0.12.2
 gunicorn==19.7.1
 fuzzywuzzy==0.16.0
 python-Levenshtein==39.0.1
+plivo==4.1.1

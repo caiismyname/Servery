@@ -24,6 +24,7 @@ class TextResponder:
                 src=self.plivoPhoneNumber,
                 dst=recipient,
                 text=message)
+            print("Sent [{}] to [{}]".format(message, recipient))
         else:
             print("Sending [{}] to [{}]".format(message, recipient))
 

@@ -7,7 +7,7 @@ from firebase_admin import db
 class SubscriptionManager:
     def __init__(self, db):
         self.db = db
-        
+
     def unsubscribeFromService(self, user):
         if self.db.reference("users/{}".format(user)).get() is None:
             self.__removeLatentUser(user)
@@ -33,7 +33,7 @@ class SubscriptionManager:
             userRef = db.reference("users/{}".format(user))
             userRef.delete()
         
-    # This method subsribes a user to a servery, but also serves to enter
+    # This method subscribes a user to a servery, but also serves to enter
     # a new user into the system
     def addToServery(self, user, servery, meal):
         # Add to new servery
@@ -48,11 +48,11 @@ class SubscriptionManager:
         # Update user entry
         if meal == Meal.LUNCH or meal == Meal.ALL:
             userRef = self.db.reference("users/{}/lunch/{}/".format(user, servery.value))
-            userRef.set(servery)
+            userRef.set(servery.value)
 
         if meal == Meal.DINNER or meal == Meal.ALL:
             userRef = self.db.reference("users/{}/dinner/{}/".format(user, servery.value))
-            userRef.set(servery)
+            userRef.set(servery.value)
 
         # If it's their first servery after going latent, need to remove from latent list
         self.__removeLatentUser(user)

@@ -39,6 +39,10 @@ def __initFirebase():
 	cred = credentials.Certificate(serviceAccountKey)
 	firebase_admin.initialize_app(cred, {"databaseURL": "https://servery-cef7b.firebaseio.com"})
 
+        
+def fixupPhoneNumber(number):
+	return "1{}".format(number)
+
 __initFirebase()
 messageParser = MessageParser()
 subscriptionManager = SubscriptionManager(db)
@@ -50,7 +54,7 @@ app = Flask(__name__)
 @app.route('/processMessage', methods=['POST'])
 def serveRequests():
 	body = request.form['Text'].strip().lower()
-	number = request.form['From']
+	number = fixupPhoneNumber(request.form['From'])
 	print("Body: ", body, "Number: ", number)
 
 	msg = messageParser.parse(body)
