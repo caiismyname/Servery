@@ -1,6 +1,6 @@
 import os
 
-from Types import Meal
+from CustomTypes import Meal
 
 from firebase_admin import db
 

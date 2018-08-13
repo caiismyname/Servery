@@ -1,7 +1,7 @@
 import os
 import sys
 
-from Types import SubOpMsg, OpType, UnsubscribeMsg, InstructionMsg
+from CustomTypes import SubOpMsg, OpType, UnsubscribeMsg, InstructionMsg
 from SubscriptionManager import SubscriptionManager
 from TextResponder import TextResponder
 from MessageParser import MessageParser

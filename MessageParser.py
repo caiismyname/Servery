@@ -1,4 +1,4 @@
-from Types import SubOpMsg, InstructionMsg, UnsubscribeMsg, OpType, Meal, Serveries
+from CustomTypes import SubOpMsg, InstructionMsg, UnsubscribeMsg, OpType, Meal, Serveries
 
 from fuzzywuzzy import fuzz, process
 
