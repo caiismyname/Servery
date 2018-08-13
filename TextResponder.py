@@ -19,10 +19,11 @@ class TextResponder:
         self.client = plivo.RestClient()
 
     def __sendMessage(self, recipient, message):
-        self.client.messages.create(
-            src=self.plivoPhoneNumber,
-            dst=recipient,
-            text=message)
+        if self.testMode is None or self.testMode == False:
+            self.client.messages.create(
+                src=self.plivoPhoneNumber,
+                dst=recipient,
+                text=message)
         print("Sent [{}] to [{}]".format(message, recipient))
 
     def __getMenuForServery(self, servery):
@@ -30,15 +31,17 @@ class TextResponder:
 
     def __getServeriesForUser(self, user):
         all = self.db.reference("users/{}".format(user)).get()
-        lunch = all["lunch"].keys()
-        dinner = all["dinner"].keys()
+        lunch = list(all["lunch"].keys())
+        dinner = list(all["dinner"].keys())
         distinctServeries = set(lunch + dinner)
         
         formattedString = ""
         for servery in distinctServeries:
-            formattedString += "{}, ".format(servery.value)
+            # Since we're pulling servery names from their string representations
+            # in the DB, they're not an enum value here.
+            formattedString += "{}, ".format(servery)
         
-        formattedString = formattedString[:-1] # Strip trailing comma
+        formattedString = formattedString[:-2] # Strip trailing comma and space
         return formattedString
 
     def sendMenuForServery(self, user, servery):
@@ -48,10 +51,10 @@ class TextResponder:
         self.__sendMessage(user, self.responses["instructions"].format(self.__getServeriesForUser(user)))
 
     def sendAddServeryConfirmation(self, user, servery, meal):
-        self.__sendMessage(user, self.responses["add-servery-confirmation"].format(servery.value, meal))
+        self.__sendMessage(user, self.responses["add-servery-confirmation"].format(servery.value, meal.value))
 
     def sendRemoveServeryConfirmation(self, user, servery, meal):
-        self.__sendMessage(user, self.responses["add-servery-confirmation"].format(servery.value, meal))
+        self.__sendMessage(user, self.responses["remove-servery-confirmation"].format(servery.value, meal.value))
 
     def sendUnsubscribeConfirmation(self, user):
         self.__sendMessage(user, self.responses["unsubscribe-confirmation"])

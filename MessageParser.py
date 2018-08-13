@@ -49,10 +49,9 @@ class MessageParser:
     def __whichOpType(self, message):
         opTypes = ["add", "remove", "delete", "join", "follow"]
         op, confidence = process.extractOne(message, opTypes)
-
         if confidence < 70:
             return OpType.QUERY
-        elif op == "and" or op == "join" or op == "follow":
+        elif op == "add" or op == "join" or op == "follow":
             return OpType.ADD
         else:
             return OpType.REMOVE

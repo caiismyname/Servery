@@ -1,8 +1,6 @@
-{   "responses":
-    {   "instructions": "You're subscribed to {}. Text the name of any servery to see its next menu. Text \"add [servery]\" to subscribe to another servery, or \"remove [servery]\" to unsubscribe. Text \"leave\" to unsubscribe from this service.",
-        "welcome": "You'll receive the menu for {} servery an hour before lunch and dinner. Text the name of any servery to see its next menu. Use \"add [servery]\" to subscribe to another servery.",
-        "unsubscribe-confirmation": "You will no longer receive servery updates.",
-        "add-servery-confirmation": "You have subscribed to {} servery updates for {}.",
-        "remove-servery-confirmation": "You have unsubscribed from {} servery updates for {}."
-    }
+{   "instructions": "You're subscribed to {}. Text the name of any servery to see its next menu. Text \"add [servery]\" to subscribe to another servery, or \"remove [servery]\" to unsubscribe. Text \"leave\" to unsubscribe from this service.",
+    "welcome": "You'll receive the menu for {} servery an hour before lunch and dinner. Text the name of any servery to see its next menu. Use \"add [servery]\" to subscribe to another servery.",
+    "unsubscribe-confirmation": "You will no longer receive servery updates.",
+    "add-servery-confirmation": "You have subscribed to {} servery updates for {}.",
+    "remove-servery-confirmation": "You have unsubscribed from {} servery updates for {}."
 }
