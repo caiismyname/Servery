@@ -6,7 +6,7 @@ import plivo
 
 class TextResponder:
     def __init__(self, db):
-        self.plivoPhoneNumber = "+17137144366"
+        self.plivoPhoneNumber = "17137144366"
         self.__initPlivo()
 
         self.db = db
@@ -19,14 +19,11 @@ class TextResponder:
         self.client = plivo.RestClient()
 
     def __sendMessage(self, recipient, message):
-        if not self.testMode:
-            self.client.messages.create(
-                src=self.plivoPhoneNumber,
-                dst=recipient,
-                text=message)
-            print("Sent [{}] to [{}]".format(message, recipient))
-        else:
-            print("Sending [{}] to [{}]".format(message, recipient))
+        self.client.messages.create(
+            src=self.plivoPhoneNumber,
+            dst=recipient,
+            text=message)
+        print("Sent [{}] to [{}]".format(message, recipient))
 
     def __getMenuForServery(self, servery):
         return self.db.reference("menus/{}".format(servery.value)).get()
