@@ -24,10 +24,10 @@ class SubscriptionManager:
                 dinnerServeries = dinnerRef.get().keys()
 
             for servery in lunchServeries:
-                serveryRef = self.db.reference("serveries/{}/lunch/{}}".format(servery, user))
+                serveryRef = self.db.reference("serveries/{}/lunch/{}".format(servery, user))
                 serveryRef.delete()
             for servery in dinnerServeries:
-                serveryRef = self.db.reference("serveries/{}/dinner/{}}".format(servery, user))
+                serveryRef = self.db.reference("serveries/{}/dinner/{}".format(servery, user))
                 serveryRef.delete()
 
             userRef = db.reference("users/{}".format(user))

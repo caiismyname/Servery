@@ -63,6 +63,7 @@ def serveRequests():
 			else:
 				print("{}: First time user, subscribing to {}".format(number, msg.servery))
 				subscriptionManager.addToServery(number, msg.servery, msg.meal)
+				textResponder.sendAddServeryConfirmation(number, msg.servery, msg.meal)
 
 		elif msg.opType == OpType.ADD:
 			print("{}: Added {}".format(number, msg.servery))

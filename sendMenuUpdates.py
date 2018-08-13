@@ -16,7 +16,7 @@ southServeries = ["Seibel", "SidRich", "South", "Baker"]
 northWeekendServery = "North"
 southWeekendServery = "Seibel"
 
-plivoPhoneNumber = "7137144366"
+plivoPhoneNumber = "17137144366"
 initFirebase()
 adManager = AdManager(db)
 testMode = False
@@ -141,7 +141,7 @@ if (len(sys.argv) > 1):
 	if ("-t" in sys.argv):
 		testMode = True
 
-if (os.environ.get("NOT-HEROKU") == "TRUE"):
-	testMode = True
+# if (os.environ.get("NOT-HEROKU") == "TRUE"):
+# 	testMode = True
 
 updateUsers()
