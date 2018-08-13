@@ -8,7 +8,7 @@ class TextResponder:
     def __init__(self, db):
         self.plivoPhoneNumber = "17137144366"
         self.__initPlivo()
-
+        self.testMode = False
         self.db = db
 
         responseJson = open("responses.json", "r")
@@ -19,7 +19,7 @@ class TextResponder:
         self.client = plivo.RestClient()
 
     def __sendMessage(self, recipient, message):
-        if self.testMode is None or self.testMode == False:
+        if self.testMode == False:
             self.client.messages.create(
                 src=self.plivoPhoneNumber,
                 dst=recipient,
