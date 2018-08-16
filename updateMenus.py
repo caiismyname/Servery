@@ -47,7 +47,7 @@ def storeMenu(servery, menu):
 	ref.set(menu)
 
 def storeSpecials():
-	for special in targetSpecials
+	for special in targetSpecials:
 		if special in foundSpecials:
 			db.reference("specials/{}".format(special)).set(foundSpecials[special])
 		else:
@@ -69,7 +69,7 @@ def getWebsite():
 
 	return site
 
-def parseMenuItems(self, menu, servery):
+def parseMenuItems(menu, servery):
 	menuItems = []
 	start = 0
 	while True:
@@ -100,8 +100,8 @@ def getMenusFromSite(site):
 		startIndex = site.find("<div class=\"servery-title\" id=\"" + s)
 		endIndex = site.find("<div class=\"servery-title\"", startIndex + 1)
 		
-		menuMap[s] = parseMenu(site[startIndex:endIndex], s)
-		print(stringifyMenu(menuMap[s]))
+		menuMap[s] = parseMenuItems(site[startIndex:endIndex], s)
+		print(stringifyMenu(s, menuMap[s]))
 
 	return menuMap
 
@@ -123,7 +123,7 @@ def updateMenus():
 	menuMap = getMenusFromSite(getWebsite())
 
 	for servery in serveries:
-		storeMenu(servery, stringifyMenu(menuMap[servery]))
+		storeMenu(servery, stringifyMenu(servery, menuMap[servery]))
 
 	storeSpecials()
 
