@@ -54,8 +54,11 @@ def countLatentUsers():
 
 def countUsersPerServery():
 	for servery in serveries:
-			ref = db.reference("serveries/" + servery)
-			print("\t" + servery + ":\t" + str(len(ref.get().keys())))
+		lunchRef = db.reference("serveries/{}/{}".format(servery, "lunch"))
+		dinnerRef = db.reference("serveries/{}/{}".format(servery, "dinner"))
+		print(servery)
+		print("\t{}:\t{}".format("lunch", str(len(lunchRef.get().keys()))))
+		print("\t{}:\t{}".format("dinner", str(len(dinnerRef.get().keys()))))
 
 initEnviron()
 countActiveUsers()
