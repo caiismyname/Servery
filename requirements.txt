@@ -8,3 +8,4 @@ gunicorn==19.9.0
 fuzzywuzzy==0.16.0
 python-Levenshtein==0.12.0
 plivo==4.1.1
+python-dateutil==2.7.3
