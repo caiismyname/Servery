@@ -52,14 +52,15 @@ testMode = False
 ################
 
 def sendBulkMessage(recipients, message):
+	delimitedRecipients = "<".join(str(r) for r in recipients)
 	if not testMode:
 		client = plivo.RestClient()
 		response = client.messages.create(
 			src=plivoPhoneNumber,
-			dst=recipients,
+			dst=delimitedRecipients,
 			text=message)
 		print(response)
-	print("Sending: [{}] to [{}]".format(message, recipients))
+	print("Sending: [{}] to [{}]".format(message, delimitedRecipients))
 
 ################
 # Helpers
