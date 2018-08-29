@@ -1,21 +1,11 @@
 import os
 import sys
-from datetime import date, datetime
-from dateutil import tz
 from dotenv import load_dotenv, find_dotenv
 
-from AdManager import AdManager
-
-import requests
 import firebase_admin
 from firebase_admin import credentials, db
 import plivo
 
-serveries = ["Seibel", "North", "Baker", "SidRich", "South", "West"]
-northServeries = ["North", "West"]
-southServeries = ["Seibel", "SidRich", "South", "Baker"]
-northWeekendServery = "North"
-southWeekendServery = "Seibel"
 
 # Sets up environment variables for secrets
 def initFirebase():
@@ -45,7 +35,6 @@ def initFirebase():
 plivoPhoneNumber = "17137144366"
 plivoTollFreeNumber = "18552091827"
 initFirebase()
-adManager = AdManager(db)
 testMode = False
 
 ################
@@ -71,25 +60,9 @@ def getUsersOfServery(servery, meal):
 	ref = db.reference("serveries/{}/{}".format(servery, meal))
 	return ref.get().keys()
 
-# For use on weekends, to send only one menu instead of 
-# the subscribed serveries
-def splitUsersNorthSouth(meal):
-	allUsers = db.reference("users").get()
-	northUsers = []
-	southUsers = []
-
-	for user in allUsers:
-		for servery in northServeries:
-			if servery in allUsers[user][meal]:
-				northUsers.append(user)
-				break
-		
-		for servery in southServeries:
-			if servery in allUsers[user][meal]:
-				southUsers.append(user)
-				break
-	
-	return {"north": northUsers, "south": southUsers}
+def getAllUsers():
+    ref = db.reference("users")
+    return ref.get().keys()
 
 def splitAndSend(recipients, message):
 	groups = []
@@ -114,50 +87,11 @@ def splitAndSend(recipients, message):
 	for group in groups:
 		sendBulkMessage(group, message)
 
-# Returns "lunch" or "dinner"
-def getMeal():
-	fromZone = tz.gettz('UTC')
-	toZone = tz.gettz('America/Chicago')
-	utc = datetime.utcnow().replace(tzinfo=fromZone)
-	houstonTime = utc.astimezone(toZone)
-
-	if houstonTime.hour <= 13:
-		return "lunch"
-	elif houstonTime.hour > 13:
-		return "dinner"
-
-######################
-# Put it all together
-######################
-
-def updateUsers():
-	weekdays = [1,2,3,4,5]
-	today = date.today()
-	isWeekday = today.isoweekday() in weekdays
-	meal = getMeal()
-	menus = db.reference("menus").get()
-	ad = adManager.getMenuUpdateAd()
-
-	# On weekdays, go through serveries and send menus for everyone subscribed to a servery
-	if isWeekday:
-		for servery in serveries:
-			message = "{} {}".format(menus[servery], ad)
-			users = getUsersOfServery(servery, meal)
-			splitAndSend(users, message)
-	# On weekends, iterate through users and send menu for North if subscribed to 
-	# a north servery, Seibel if south
-	else:
-		northSouthSplit = splitUsersNorthSouth(meal)
-		splitAndSend(northSouthSplit["north"], "{} {}".format(menus["North"], ad))
-		splitAndSend(northSouthSplit["south"], "{} {}".format(menus["Seibel"], ad))
-
-
+def broadcastMessage(message):
+    splitAndSend(getAllUsers(), message)
 
 if (len(sys.argv) > 1):
-	if ("-t" in sys.argv):
-		testMode = True
-
-# if (os.environ.get("NOT-HEROKU") == "TRUE"):
-# 	testMode = True
-
-updateUsers()
+    if ("-t" in sys.argv):
+        testMode = True
+    else:
+        broadcastMessage(sys.argv[1])

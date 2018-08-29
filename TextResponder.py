@@ -7,6 +7,7 @@ import plivo
 class TextResponder:
     def __init__(self, db):
         self.plivoPhoneNumber = "17137144366"
+        self.plivoTollFreeNumber = "18552091827"
         self.__initPlivo()
         self.testMode = False
         self.db = db
@@ -21,7 +22,7 @@ class TextResponder:
     def __sendMessage(self, recipient, message):
         if self.testMode == False:
             self.client.messages.create(
-                src=self.plivoPhoneNumber,
+                src=self.plivoTollFreeNumber,
                 dst=recipient,
                 text=message)
         print("Sent [{}] to [{}]".format(message, recipient))
